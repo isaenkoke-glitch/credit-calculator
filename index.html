@@ -3,27 +3,27 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Финансовый трекер кредитов</title>
+  <title>Финансовый трекер кредитов и займов</title>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <style>
     :root {
       --bg: #eef3fb;
-      --panel: rgba(255,255,255,.9);
-      --panel-strong: #ffffff;
-      --text: #152033;
-      --muted: #6b7280;
-      --line: rgba(21,32,51,.10);
-      --shadow: 0 20px 50px rgba(21,32,51,.08);
-      --blue: #3b82f6;
-      --blue-soft: rgba(59,130,246,.12);
-      --green: #10b981;
-      --green-soft: rgba(16,185,129,.12);
-      --amber: #f59e0b;
-      --amber-soft: rgba(245,158,11,.14);
-      --red: #ef4444;
-      --red-soft: rgba(239,68,68,.12);
+      --panel: rgba(255, 255, 255, 0.9);
+      --panel-strong: #fff;
+      --text: #122033;
+      --muted: #67758a;
+      --line: rgba(18, 32, 51, 0.10);
+      --shadow: 0 18px 50px rgba(18, 32, 51, 0.08);
+      --blue: #2563eb;
+      --blue-soft: rgba(37, 99, 235, 0.12);
+      --green: #059669;
+      --green-soft: rgba(5, 150, 105, 0.12);
+      --amber: #d97706;
+      --amber-soft: rgba(217, 119, 6, 0.14);
+      --red: #dc2626;
+      --red-soft: rgba(220, 38, 38, 0.12);
       --radius: 24px;
     }
 
@@ -31,131 +31,112 @@
     html, body { margin: 0; padding: 0; }
     body {
       font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background:
-        radial-gradient(circle at top left, rgba(59,130,246,.12), transparent 32%),
-        radial-gradient(circle at top right, rgba(16,185,129,.10), transparent 26%),
-        var(--bg);
       color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 30%),
+        radial-gradient(circle at top right, rgba(5, 150, 105, 0.10), transparent 24%),
+        var(--bg);
     }
 
     .shell { max-width: 1560px; margin: 0 auto; padding: 24px; }
-
     .topbar {
-      display: flex; align-items: center; justify-content: space-between; gap: 16px;
-      padding: 18px 20px; border: 1px solid var(--line); border-radius: 28px;
-      background: rgba(255,255,255,.66); backdrop-filter: blur(16px); box-shadow: var(--shadow);
-      margin-bottom: 18px;
+      display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; flex-wrap: wrap;
+      background: rgba(255,255,255,0.70); backdrop-filter: blur(16px);
+      border: 1px solid var(--line); border-radius: 28px; padding: 18px 20px; box-shadow: var(--shadow);
     }
-    .title-wrap h1 { margin: 0; font-size: clamp(24px, 2.5vw, 36px); letter-spacing: -0.03em; }
-    .title-wrap p { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
-    .status-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: flex-end; }
+    .title-wrap h1 { margin: 0; font-size: clamp(24px, 2.5vw, 38px); letter-spacing: -0.03em; }
+    .title-wrap p { margin: 8px 0 0; color: var(--muted); font-size: 14px; max-width: 920px; }
+    .top-actions { display: flex; flex-direction: column; gap: 10px; align-items: flex-end; }
+    .status-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
     .pill {
       display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 999px;
-      font-size: 13px; border: 1px solid var(--line); background: rgba(255,255,255,.85);
+      border: 1px solid var(--line); background: rgba(255,255,255,0.88); font-size: 13px; font-weight: 700;
     }
-    .pill strong { font-weight: 700; }
-    .pill.blue { background: var(--blue-soft); color: #1d4ed8; border-color: rgba(59,130,246,.18); }
-    .pill.green { background: var(--green-soft); color: #0f766e; border-color: rgba(16,185,129,.18); }
-    .pill.amber { background: var(--amber-soft); color: #92400e; border-color: rgba(245,158,11,.18); }
+    .pill.blue { background: var(--blue-soft); color: #1d4ed8; border-color: rgba(37,99,235,0.18); }
+    .pill.green { background: var(--green-soft); color: #047857; border-color: rgba(5,150,105,0.18); }
+    .pill.amber { background: var(--amber-soft); color: #92400e; border-color: rgba(217,119,6,0.18); }
 
-    .toolbar { display: flex; gap: 10px; flex-wrap: wrap; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
     button, .btn {
-      border: 0; border-radius: 14px; padding: 11px 14px; cursor: pointer; font-weight: 700;
-      background: #e5eefb; color: #1d4ed8; transition: transform .16s ease, box-shadow .16s ease, opacity .16s ease;
-      box-shadow: 0 8px 18px rgba(29,78,216,.08);
+      border: 0; border-radius: 14px; padding: 11px 14px; cursor: pointer; font: inherit; font-weight: 700;
+      background: #e5eefb; color: #1d4ed8; box-shadow: 0 8px 18px rgba(29,78,216,0.08);
+      transition: transform .16s ease, box-shadow .16s ease, opacity .16s ease;
     }
     button:hover, .btn:hover { transform: translateY(-1px); }
     button.primary { background: linear-gradient(135deg, #2563eb, #4f46e5); color: #fff; }
-    button.ghost { background: rgba(255,255,255,.8); color: var(--text); border: 1px solid var(--line); box-shadow: none; }
+    button.ghost { background: rgba(255,255,255,0.85); color: var(--text); border: 1px solid var(--line); box-shadow: none; }
     button.danger { background: var(--red-soft); color: #b91c1c; box-shadow: none; }
 
     .notice {
-      margin: 12px 0 18px; padding: 14px 16px; border-radius: 18px; background: rgba(255,255,255,.72);
-      border: 1px solid var(--line); color: var(--muted); font-size: 14px;
+      margin: 14px 0 18px; padding: 14px 16px; border-radius: 18px; border: 1px solid var(--line);
+      background: rgba(255,255,255,0.72); color: var(--muted); font-size: 14px; line-height: 1.5;
     }
 
-    .summary-grid {
-      display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; margin: 18px 0 18px;
-    }
+    .summary-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; margin-bottom: 18px; }
     .metric {
-      background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px;
-      box-shadow: var(--shadow); min-height: 108px;
+      background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow);
+      min-height: 110px;
     }
     .metric .label { color: var(--muted); font-size: 13px; margin-bottom: 8px; }
-    .metric .value { font-size: clamp(22px, 2vw, 34px); font-weight: 800; letter-spacing: -0.03em; }
+    .metric .value { font-size: clamp(22px, 2vw, 34px); font-weight: 900; letter-spacing: -0.03em; }
     .metric .sub { margin-top: 8px; color: var(--muted); font-size: 13px; }
-    .metric.blue { background: linear-gradient(180deg, rgba(59,130,246,.14), rgba(255,255,255,.92)); }
-    .metric.green { background: linear-gradient(180deg, rgba(16,185,129,.14), rgba(255,255,255,.92)); }
-    .metric.amber { background: linear-gradient(180deg, rgba(245,158,11,.16), rgba(255,255,255,.92)); }
-    .metric.red { background: linear-gradient(180deg, rgba(239,68,68,.14), rgba(255,255,255,.92)); }
+    .metric.blue { background: linear-gradient(180deg, rgba(37,99,235,0.14), rgba(255,255,255,0.94)); }
+    .metric.green { background: linear-gradient(180deg, rgba(5,150,105,0.14), rgba(255,255,255,0.94)); }
+    .metric.amber { background: linear-gradient(180deg, rgba(217,119,6,0.16), rgba(255,255,255,0.94)); }
+    .metric.red { background: linear-gradient(180deg, rgba(220,38,38,0.14), rgba(255,255,255,0.94)); }
 
-    .layout { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(360px, .95fr); gap: 18px; align-items: start; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1.44fr) minmax(360px, 0.96fr); gap: 18px; align-items: start; }
     .stack { display: grid; gap: 18px; }
     .panel {
-      background: var(--panel); border: 1px solid var(--line); border-radius: 28px; box-shadow: var(--shadow);
-      padding: 18px;
+      background: var(--panel); border: 1px solid var(--line); border-radius: 28px; box-shadow: var(--shadow); padding: 18px;
     }
     .panel h2 { margin: 0 0 8px; font-size: 21px; letter-spacing: -0.02em; }
-    .panel .subtitle { margin: 0 0 16px; color: var(--muted); font-size: 14px; }
-    .section-head { display:flex; justify-content: space-between; align-items: center; gap: 14px; margin-bottom: 12px; }
-    .section-head .hint { color: var(--muted); font-size: 13px; }
+    .subtitle { margin: 0 0 16px; color: var(--muted); font-size: 14px; line-height: 1.5; }
+    .section-head { display:flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 10px; }
+    .section-hint { color: var(--muted); font-size: 13px; white-space: nowrap; }
 
-    .ob-list, .tx-list, .rec-list, .upcoming-list { display: grid; gap: 12px; }
+    .ob-list, .tx-list, .upcoming-list, .rec-list { display: grid; gap: 12px; }
     .ob-card {
-      background: rgba(255,255,255,.92); border: 1px solid var(--line); border-radius: 22px; padding: 16px;
+      background: rgba(255,255,255,0.94); border: 1px solid var(--line); border-radius: 22px; padding: 16px;
       display: grid; gap: 12px;
     }
     .ob-card.credit { border-left: 6px solid var(--blue); }
     .ob-card.family { border-left: 6px solid var(--green); }
     .ob-top { display:flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
-    .ob-title { font-size: 18px; font-weight: 800; margin: 2px 0 4px; letter-spacing: -0.02em; }
+    .ob-title { font-size: 18px; font-weight: 900; margin: 4px 0 4px; letter-spacing: -0.02em; }
     .ob-meta { color: var(--muted); font-size: 13px; }
-    .badge {
-      display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px;
-      font-size: 12px; font-weight: 800; letter-spacing: .01em;
-    }
+    .badge { display:inline-flex; align-items:center; gap:6px; padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; }
     .badge.credit { background: var(--blue-soft); color: #1d4ed8; }
     .badge.family { background: var(--green-soft); color: #047857; }
     .balance-box {
-      min-width: 170px; text-align: right; padding: 10px 12px; border-radius: 18px; background: rgba(21,32,51,.04);
-      border: 1px solid rgba(21,32,51,.06);
+      min-width: 176px; text-align: right; padding: 10px 12px; border-radius: 18px; background: rgba(18,32,51,0.04);
+      border: 1px solid rgba(18,32,51,0.06);
     }
     .balance-box .label { color: var(--muted); font-size: 12px; }
-    .balance-box .value { font-size: 24px; font-weight: 900; margin-top: 4px; letter-spacing: -0.03em; }
-
-    .progress {
-      width: 100%; height: 12px; border-radius: 999px; background: rgba(21,32,51,.07); overflow: hidden;
-    }
+    .balance-box .value { margin-top: 4px; font-size: 24px; font-weight: 900; letter-spacing: -0.03em; }
+    .progress { width: 100%; height: 12px; border-radius: 999px; background: rgba(18,32,51,0.07); overflow: hidden; }
     .progress > div { height: 100%; border-radius: inherit; background: linear-gradient(90deg, #60a5fa, #34d399); }
-
-    .stats-row {
-      display:grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px;
-    }
-    .stat {
-      padding: 10px 12px; border-radius: 16px; background: rgba(21,32,51,.04); border: 1px solid rgba(21,32,51,.05);
-    }
+    .stats-row { display:grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+    .stat { padding: 10px 12px; border-radius: 16px; background: rgba(18,32,51,0.04); border: 1px solid rgba(18,32,51,0.05); }
     .stat .k { color: var(--muted); font-size: 12px; margin-bottom: 4px; }
-    .stat .v { font-size: 16px; font-weight: 800; }
+    .stat .v { font-size: 16px; font-weight: 900; }
 
-    .edit-grid {
-      display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px;
-    }
+    .edit-grid { display:grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
     .edit-grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .edit-grid.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
     .field { display:grid; gap: 6px; }
     .field label { color: var(--muted); font-size: 12px; font-weight: 700; }
     input, select, textarea {
-      width: 100%; border-radius: 14px; border: 1px solid rgba(21,32,51,.12); background: #fff; color: var(--text);
+      width: 100%; border-radius: 14px; border: 1px solid rgba(18,32,51,0.12); background: #fff; color: var(--text);
       padding: 11px 12px; outline: none; font: inherit;
     }
     textarea { min-height: 82px; resize: vertical; }
-    input:focus, select:focus, textarea:focus { border-color: rgba(59,130,246,.55); box-shadow: 0 0 0 4px rgba(59,130,246,.10); }
+    input:focus, select:focus, textarea:focus { border-color: rgba(37,99,235,0.55); box-shadow: 0 0 0 4px rgba(37,99,235,0.10); }
     .card-actions { display:flex; flex-wrap: wrap; gap: 10px; align-items: center; }
     .small-note { color: var(--muted); font-size: 12px; }
+    .empty { padding: 18px; border-radius: 18px; border: 1px dashed rgba(18,32,51,0.18); color: var(--muted); background: rgba(255,255,255,0.72); text-align: center; }
 
     .form-grid {
-      display:grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 10px; align-items: end;
-      margin-top: 12px;
+      display:grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 10px; align-items: end; margin-top: 12px;
     }
     .form-grid .field:nth-child(1) { grid-column: span 3; }
     .form-grid .field:nth-child(2) { grid-column: span 3; }
@@ -168,36 +149,35 @@
     .form-grid .field:nth-child(9) { grid-column: span 3; }
     .form-grid .field:nth-child(10) { grid-column: span 3; }
     .form-grid .field:nth-child(11) { grid-column: span 3; }
-    .form-grid .field:nth-child(12) { grid-column: span 12; }
-    .form-grid .full { grid-column: 1 / -1; }
+    .form-grid .field.full { grid-column: 1 / -1; }
+
+    .recommend-card {
+      border-radius: 22px; padding: 16px; background: linear-gradient(180deg, rgba(37,99,235,0.10), rgba(255,255,255,0.95));
+      border: 1px solid rgba(37,99,235,0.16);
+    }
+    .recommend-card.family {
+      background: linear-gradient(180deg, rgba(5,150,105,0.12), rgba(255,255,255,0.95));
+      border-color: rgba(5,150,105,0.16);
+    }
+    .recommend-card .row { display:flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+    .recommend-card h3 { margin: 6px 0 6px; font-size: 18px; }
+    .recommend-card .meta { color: var(--muted); font-size: 13px; line-height: 1.45; }
+
+    canvas { width: 100% !important; height: 280px !important; }
+    .chart-box { padding-top: 8px; }
+    .mini-stats { display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+    .mini-stat { padding: 12px; border-radius: 16px; background: rgba(18,32,51,0.04); border: 1px solid rgba(18,32,51,0.05); }
+    .mini-stat .k { color: var(--muted); font-size: 12px; margin-bottom: 4px; }
+    .mini-stat .v { font-size: 16px; font-weight: 900; }
 
     .tx-item {
-      background: rgba(255,255,255,.92); border: 1px solid var(--line); border-radius: 18px; padding: 14px;
+      background: rgba(255,255,255,0.94); border: 1px solid var(--line); border-radius: 18px; padding: 14px;
       display:flex; justify-content: space-between; gap: 12px; align-items: flex-start;
     }
     .tx-item .left { display:grid; gap: 4px; }
-    .tx-item .title { font-weight: 800; }
+    .tx-item .title { font-weight: 900; }
     .tx-item .meta { color: var(--muted); font-size: 13px; }
-    .tx-item .sum { font-weight: 900; font-size: 18px; text-align: right; }
-
-    .recommend-card {
-      border-radius: 22px; padding: 16px; background: linear-gradient(180deg, rgba(59,130,246,.10), rgba(255,255,255,.94));
-      border: 1px solid rgba(59,130,246,.16); margin-bottom: 12px;
-    }
-    .recommend-card.family { background: linear-gradient(180deg, rgba(16,185,129,.12), rgba(255,255,255,.94)); border-color: rgba(16,185,129,.16); }
-    .recommend-card .row { display:flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
-    .recommend-card h3 { margin: 4px 0 6px; font-size: 18px; }
-    .recommend-card .meta { color: var(--muted); font-size: 13px; }
-
-    canvas { width: 100% !important; height: 290px !important; }
-    .chart-box { padding-top: 8px; }
-
-    .empty {
-      padding: 18px; border-radius: 18px; border: 1px dashed rgba(21,32,51,.18); color: var(--muted);
-      background: rgba(255,255,255,.7); text-align: center;
-    }
-
-    .footer-note { margin-top: 10px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .tx-item .sum { font-size: 18px; font-weight: 900; text-align: right; }
 
     @media (max-width: 1320px) {
       .layout { grid-template-columns: 1fr; }
@@ -206,12 +186,13 @@
     }
     @media (max-width: 760px) {
       .shell { padding: 14px; }
-      .topbar { padding: 14px; border-radius: 22px; flex-direction: column; align-items: flex-start; }
-      .status-row { justify-content: flex-start; }
+      .topbar { padding: 14px; border-radius: 22px; flex-direction: column; }
+      .top-actions { width: 100%; align-items: flex-start; }
+      .status-row, .toolbar { justify-content: flex-start; }
       .summary-grid { grid-template-columns: 1fr; }
-      .stats-row, .edit-grid, .edit-grid.four, .edit-grid.two { grid-template-columns: 1fr; }
+      .stats-row, .edit-grid, .edit-grid.two, .mini-stats { grid-template-columns: 1fr; }
       .form-grid .field { grid-column: 1 / -1 !important; }
-      .ob-top, .tx-item, .recommend-card .row { flex-direction: column; }
+      .ob-top, .recommend-card .row, .tx-item, .section-head { flex-direction: column; }
       .balance-box { width: 100%; text-align: left; }
     }
   </style>
@@ -221,11 +202,13 @@
     <div class="topbar">
       <div class="title-wrap">
         <h1>Финансовый трекер кредитов и займов</h1>
-        <p>Общая ссылка для вас и брата. История платежей, досрочки, долги родственникам, графики и рекомендации по свободной сумме.</p>
+        <p>Общая ссылка для вас и брата. История платежей, досрочки, долги родственникам, прогнозный график и рекомендации по свободной сумме.</p>
       </div>
-      <div class="status-row">
-        <span class="pill blue" id="syncPill">Синхронизация: загрузка…</span>
-        <span class="pill" id="updatedPill">Последнее обновление: —</span>
+      <div class="top-actions">
+        <div class="status-row">
+          <span class="pill blue" id="syncPill">Синхронизация: загрузка…</span>
+          <span class="pill" id="updatedPill">Последнее обновление: —</span>
+        </div>
         <div class="toolbar">
           <button class="ghost" id="exportBtn" type="button">Экспорт JSON</button>
           <button class="ghost" id="importBtn" type="button">Импорт JSON</button>
@@ -234,7 +217,7 @@
       </div>
     </div>
 
-    <div class="notice" id="notice">Введите кредиты, займы у родственников и платежи. Остатки и графики пересчитываются автоматически после сохранения.</div>
+    <div class="notice" id="notice">Добавляйте кредиты, займы родственникам и платежи. Остатки и графики будут обновляться автоматически.</div>
 
     <div class="summary-grid" id="summaryGrid"></div>
 
@@ -244,53 +227,23 @@
           <div class="section-head">
             <div>
               <h2>Кредиты</h2>
-              <div class="subtitle">Добавьте каждый кредит отдельной карточкой. Можно менять ставку, дату начала, регулярный платёж и день списания.</div>
+              <div class="subtitle">Каждый кредит хранится отдельной карточкой. Можно менять ставку, дату начала, регулярный платёж и день списания.</div>
             </div>
-            <div class="hint">Остаток тела и проценты считаются отдельно</div>
+            <div class="section-hint">Остаток тела и проценты считаются отдельно</div>
           </div>
           <div class="ob-list" id="creditList"></div>
 
-          <div class="form-grid" id="creditAddForm">
-            <div class="field">
-              <label>Название</label>
-              <input id="newCreditName" placeholder="Ипотека / Карта / Кредит наличными" />
-            </div>
-            <div class="field">
-              <label>Банк</label>
-              <input id="newCreditLender" placeholder="Сбер / Тинькофф / ВТБ" />
-            </div>
-            <div class="field">
-              <label>Дата выдачи</label>
-              <input id="newCreditStart" type="date" />
-            </div>
-            <div class="field">
-              <label>Сумма</label>
-              <input id="newCreditPrincipal" type="number" step="0.01" placeholder="0" />
-            </div>
-            <div class="field">
-              <label>Ставка, %</label>
-              <input id="newCreditApr" type="number" step="0.01" placeholder="0" />
-            </div>
-            <div class="field">
-              <label>Мин. платёж</label>
-              <input id="newCreditMinPayment" type="number" step="0.01" placeholder="0" />
-            </div>
-            <div class="field">
-              <label>Плановый платёж</label>
-              <input id="newCreditScheduled" type="number" step="0.01" placeholder="0" />
-            </div>
-            <div class="field">
-              <label>День месяца</label>
-              <input id="newCreditDay" type="number" min="1" max="31" placeholder="1–31" />
-            </div>
-            <div class="field">
-              <label>Примечание</label>
-              <input id="newCreditNotes" placeholder="Например: досрочки только через приложение" />
-            </div>
-            <div class="field">
-              <label>&nbsp;</label>
-              <button class="primary" id="addCreditBtn" type="button">Добавить кредит</button>
-            </div>
+          <div class="form-grid" id="creditForm">
+            <div class="field"><label>Название</label><input id="newCreditName" placeholder="Ипотека / Карта / Наличными" /></div>
+            <div class="field"><label>Банк</label><input id="newCreditLender" placeholder="Сбер / Тинькофф / ВТБ" /></div>
+            <div class="field"><label>Дата выдачи</label><input id="newCreditStart" type="date" /></div>
+            <div class="field"><label>Сумма</label><input id="newCreditPrincipal" type="number" step="0.01" placeholder="0" /></div>
+            <div class="field"><label>Ставка, %</label><input id="newCreditApr" type="number" step="0.01" placeholder="0" /></div>
+            <div class="field"><label>Мин. платёж</label><input id="newCreditMinPayment" type="number" step="0.01" placeholder="0" /></div>
+            <div class="field"><label>Плановый платёж</label><input id="newCreditScheduled" type="number" step="0.01" placeholder="0" /></div>
+            <div class="field"><label>День месяца</label><input id="newCreditDay" type="number" min="1" max="31" placeholder="1–31" /></div>
+            <div class="field"><label>Примечание</label><input id="newCreditNotes" placeholder="Например: досрочки только через приложение" /></div>
+            <div class="field"><label>&nbsp;</label><button class="primary" id="addCreditBtn" type="button">Добавить кредит</button></div>
           </div>
         </section>
 
@@ -298,45 +251,21 @@
           <div class="section-head">
             <div>
               <h2>Долги родственникам</h2>
-              <div class="subtitle">Удобно для займов у мамы, брата, друзей. Можно отмечать возвраты и видеть остаток без процентов.</div>
+              <div class="subtitle">Подходит для займов у мамы, брата, друзей. Без процентов, но с учётом возвратов и остатка.</div>
             </div>
-            <div class="hint">Например: 40 / 50 тыс уже возвращено</div>
+            <div class="section-hint">Например: 40 / 50 тыс возвращено</div>
           </div>
           <div class="ob-list" id="familyList"></div>
 
-          <div class="form-grid" id="familyAddForm">
-            <div class="field">
-              <label>Кому / название</label>
-              <input id="newFamilyName" placeholder="Мама / Брат / Друг" />
-            </div>
-            <div class="field">
-              <label>От кого</label>
-              <input id="newFamilyLender" placeholder="например: семья" />
-            </div>
-            <div class="field">
-              <label>Дата займа</label>
-              <input id="newFamilyStart" type="date" />
-            </div>
-            <div class="field">
-              <label>Сумма</label>
-              <input id="newFamilyPrincipal" type="number" step="0.01" placeholder="0" />
-            </div>
-            <div class="field">
-              <label>Плановый платёж</label>
-              <input id="newFamilyScheduled" type="number" step="0.01" placeholder="0" />
-            </div>
-            <div class="field">
-              <label>День месяца</label>
-              <input id="newFamilyDay" type="number" min="1" max="31" placeholder="1–31" />
-            </div>
-            <div class="field">
-              <label>Примечание</label>
-              <input id="newFamilyNotes" placeholder="Например: вернуть до конца года" />
-            </div>
-            <div class="field">
-              <label>&nbsp;</label>
-              <button class="primary" id="addFamilyBtn" type="button">Добавить займ</button>
-            </div>
+          <div class="form-grid" id="familyForm">
+            <div class="field"><label>Кому / название</label><input id="newFamilyName" placeholder="Мама / Брат / Друг" /></div>
+            <div class="field"><label>Кому возвращаем</label><input id="newFamilyLender" placeholder="Семья / человек" /></div>
+            <div class="field"><label>Дата займа</label><input id="newFamilyStart" type="date" /></div>
+            <div class="field"><label>Сумма</label><input id="newFamilyPrincipal" type="number" step="0.01" placeholder="0" /></div>
+            <div class="field"><label>Плановый платёж</label><input id="newFamilyScheduled" type="number" step="0.01" placeholder="0" /></div>
+            <div class="field"><label>День месяца</label><input id="newFamilyDay" type="number" min="1" max="31" placeholder="1–31" /></div>
+            <div class="field"><label>Примечание</label><input id="newFamilyNotes" placeholder="Например: вернуть до конца года" /></div>
+            <div class="field"><label>&nbsp;</label><button class="primary" id="addFamilyBtn" type="button">Добавить займ</button></div>
           </div>
         </section>
 
@@ -344,9 +273,9 @@
           <div class="section-head">
             <div>
               <h2>Платежи, досрочки и возвраты</h2>
-              <div class="subtitle">Каждое внесение фиксируется отдельной записью. После добавления платежа графики и остатки обновляются автоматически.</div>
+              <div class="subtitle">Каждую внесённую сумму можно записать отдельной строкой. История платежей остаётся в журнале.</div>
             </div>
-            <div class="hint">Можно ввести прошедшие платежи</div>
+            <div class="section-hint">Можно ввести платежи задним числом</div>
           </div>
 
           <div class="form-grid" id="txForm">
@@ -362,22 +291,12 @@
               <label>Обязательство</label>
               <select id="newTxObligation"></select>
             </div>
-            <div class="field">
-              <label>Дата</label>
-              <input id="newTxDate" type="date" />
-            </div>
-            <div class="field">
-              <label>Сумма</label>
-              <input id="newTxAmount" type="number" step="0.01" placeholder="0" />
-            </div>
-            <div class="field full">
-              <label>Комментарий</label>
-              <input id="newTxNote" placeholder="Например: платёж по графику, досрочка, частичный возврат" />
-            </div>
-            <div class="field full">
-              <button class="primary" id="addTxBtn" type="button">Добавить запись</button>
-            </div>
+            <div class="field"><label>Дата</label><input id="newTxDate" type="date" /></div>
+            <div class="field"><label>Сумма</label><input id="newTxAmount" type="number" step="0.01" placeholder="0" /></div>
+            <div class="field full"><label>Комментарий</label><input id="newTxNote" placeholder="Например: платёж по графику, досрочка, частичный возврат" /></div>
+            <div class="field full"><button class="primary" id="addTxBtn" type="button">Добавить запись</button></div>
           </div>
+
           <div class="tx-list" id="txList" style="margin-top:14px;"></div>
         </section>
       </main>
@@ -387,25 +306,18 @@
           <div class="section-head">
             <div>
               <h2>Свободная сумма и лучший сценарий</h2>
-              <div class="subtitle">Система предлагает, куда выгоднее направить досрочный платёж: для снижения переплаты или для ускоренного освобождения обязательного платежа.</div>
+              <div class="subtitle">Показывает, куда выгоднее направить свободные деньги: снизить переплату или быстрее разгрузить регулярные платежи.</div>
             </div>
           </div>
           <div class="form-grid" style="margin-top:0;">
-            <div class="field">
-              <label>Свободная сумма</label>
-              <input id="freeAmount" type="number" step="0.01" placeholder="5000" />
-            </div>
-            <div class="field">
-              <label>Цель</label>
+            <div class="field"><label>Свободная сумма</label><input id="freeAmount" type="number" step="0.01" placeholder="5000" /></div>
+            <div class="field"><label>Цель</label>
               <select id="optimizeMode">
                 <option value="interest">Снизить переплату</option>
                 <option value="payment">Снизить регулярный платёж</option>
               </select>
             </div>
-            <div class="field">
-              <label>&nbsp;</label>
-              <button class="primary" id="applyFreeBtn" type="button">Записать как досрочку</button>
-            </div>
+            <div class="field"><label>&nbsp;</label><button class="primary" id="applyFreeBtn" type="button">Записать как досрочку</button></div>
           </div>
           <div class="rec-list" id="recommendations" style="margin-top:14px;"></div>
         </section>
@@ -417,32 +329,32 @@
               <div class="subtitle">Прогноз на ближайшие 24 месяца с учётом текущих плановых платежей.</div>
             </div>
           </div>
-          <canvas id="balanceChart"></canvas>
+          <canvas id="forecastChart"></canvas>
+          <div class="mini-stats" id="forecastStats"></div>
         </section>
 
         <section class="panel chart-box">
           <div class="section-head">
             <div>
               <h2>Структура долга сейчас</h2>
-              <div class="subtitle">Тело кредитов, начисленные проценты и долги родственникам.</div>
+              <div class="subtitle">Подписи и значения видны сразу, без наведения мышкой.</div>
             </div>
           </div>
           <canvas id="breakdownChart"></canvas>
+          <div class="mini-stats" id="breakdownStats"></div>
         </section>
 
         <section class="panel">
           <div class="section-head">
             <div>
               <h2>Ближайшие платежи</h2>
-              <div class="subtitle">Напоминание о том, что пора вносить по расписанию.</div>
+              <div class="subtitle">Показывает ближайшие даты по активным обязательствам.</div>
             </div>
           </div>
           <div class="upcoming-list" id="upcomingList"></div>
         </section>
       </aside>
     </div>
-
-    <div class="footer-note">Сайт хранит данные в общем документе Firestore. Это значит, что вы с братом видите один и тот же список, а при необходимости можно сделать резервную копию через JSON.</div>
   </div>
 
   <script>
@@ -456,78 +368,28 @@
       measurementId: "G-637GBQSDW6"
     };
 
-    const STORAGE_KEY = "credit_tracker_local_backup_v2";
+    const STORAGE_KEY = "credit_tracker_local_backup_v3";
     const FIRESTORE_PATH = { collection: "shared", doc: "data" };
     const MAX_FORECAST_MONTHS = 24;
 
-    const fmtMoney = new Intl.NumberFormat("ru-RU", {
+    const moneyFmt = new Intl.NumberFormat("ru-RU", {
       style: "currency",
       currency: "RUB",
       maximumFractionDigits: 2
     });
 
-    const stateTemplate = () => ({
-      version: 2,
-      obligations: [],
-      transactions: [],
-      ui: {
-        freeAmount: 5000,
-        optimizeMode: "interest"
-      },
-      meta: {
-        updatedAt: null,
-        source: "local"
-      }
-    });
-
-    let state = stateTemplate();
-    let db = null;
-    let saveTimer = null;
-    let charts = { balance: null, breakdown: null };
-    let isApplyingRemote = false;
-    let hasRemote = false;
-    let derived = null;
-
-    const els = {
-      syncPill: document.getElementById("syncPill"),
-      updatedPill: document.getElementById("updatedPill"),
-      notice: document.getElementById("notice"),
-      summaryGrid: document.getElementById("summaryGrid"),
-      creditList: document.getElementById("creditList"),
-      familyList: document.getElementById("familyList"),
-      txList: document.getElementById("txList"),
-      upcomingList: document.getElementById("upcomingList"),
-      recommendations: document.getElementById("recommendations"),
-      newCreditStart: document.getElementById("newCreditStart"),
-      newFamilyStart: document.getElementById("newFamilyStart"),
-      newTxDate: document.getElementById("newTxDate"),
-      freeAmount: document.getElementById("freeAmount"),
-      optimizeMode: document.getElementById("optimizeMode"),
-      newTxObligation: document.getElementById("newTxObligation"),
-      newTxKind: document.getElementById("newTxKind")
-    };
-
-    function uid() {
-      return crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-    }
-
     function money(value) {
       const n = Number(value);
-      return fmtMoney.format(Number.isFinite(n) ? n : 0);
+      return moneyFmt.format(Number.isFinite(n) ? n : 0);
     }
 
-    function asNumber(value) {
+    function num(value) {
       const n = Number(String(value).replace(",", "."));
       return Number.isFinite(n) ? n : 0;
     }
 
-    function esc(value) {
-      return String(value ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/\"/g, "&quot;")
-        .replace(/'/g, "&#39;");
+    function uid() {
+      return crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
     }
 
     function todayISO() {
@@ -548,27 +410,130 @@
       return Math.max(0, Math.floor((b.getTime() - a.getTime()) / 86400000));
     }
 
-    function clampDay(day) {
-      const n = Math.max(1, Math.min(31, Math.floor(asNumber(day) || 0)));
-      return Number.isFinite(n) ? n : null;
+    function clampDay(value) {
+      const n = Math.floor(num(value));
+      if (!Number.isFinite(n) || n < 1) return null;
+      return Math.min(31, n);
     }
 
-    function emptyStringToNull(value) {
-      const str = String(value ?? "").trim();
-      return str ? str : null;
+    function esc(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
     }
 
-    function localSave() {
+    const stateTemplate = () => ({
+      version: 3,
+      obligations: [],
+      transactions: [],
+      ui: {
+        freeAmount: 5000,
+        optimizeMode: "interest"
+      },
+      meta: {
+        updatedAt: null,
+        source: "local"
+      }
+    });
+
+    let state = stateTemplate();
+    let db = null;
+    let charts = { forecast: null, breakdown: null };
+    let derived = null;
+    let saveTimer = null;
+    let remoteLoaded = false;
+
+    const els = {
+      syncPill: document.getElementById("syncPill"),
+      updatedPill: document.getElementById("updatedPill"),
+      notice: document.getElementById("notice"),
+      summaryGrid: document.getElementById("summaryGrid"),
+      creditList: document.getElementById("creditList"),
+      familyList: document.getElementById("familyList"),
+      txList: document.getElementById("txList"),
+      upcomingList: document.getElementById("upcomingList"),
+      recommendations: document.getElementById("recommendations"),
+      forecastStats: document.getElementById("forecastStats"),
+      breakdownStats: document.getElementById("breakdownStats"),
+      forecastChart: document.getElementById("forecastChart"),
+      breakdownChart: document.getElementById("breakdownChart"),
+      newCreditStart: document.getElementById("newCreditStart"),
+      newFamilyStart: document.getElementById("newFamilyStart"),
+      newTxDate: document.getElementById("newTxDate"),
+      freeAmount: document.getElementById("freeAmount"),
+      optimizeMode: document.getElementById("optimizeMode"),
+      newTxObligation: document.getElementById("newTxObligation"),
+      newTxKind: document.getElementById("newTxKind")
+    };
+
+    function setNotice(text, tone = "neutral") {
+      els.notice.textContent = text;
+      els.notice.style.borderColor = tone === "good" ? "rgba(5,150,105,0.24)" : tone === "warn" ? "rgba(217,119,6,0.24)" : "rgba(18,32,51,0.10)";
+      els.notice.style.background = tone === "good" ? "rgba(5,150,105,0.08)" : tone === "warn" ? "rgba(217,119,6,0.09)" : "rgba(255,255,255,0.72)";
+    }
+
+    function setSyncState(text, cls = "blue") {
+      els.syncPill.className = `pill ${cls}`;
+      els.syncPill.textContent = text;
+    }
+
+    function setUpdatedPill() {
+      if (!state.meta.updatedAt) {
+        els.updatedPill.textContent = "Последнее обновление: —";
+        return;
+      }
+      const d = new Date(state.meta.updatedAt);
+      els.updatedPill.textContent = Number.isNaN(d.getTime())
+        ? "Последнее обновление: —"
+        : `Последнее обновление: ${d.toLocaleString("ru-RU")}`;
+    }
+
+    function saveLocal() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
 
-    function loadLocalBackup() {
+    function loadLocal() {
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (!raw) return;
-        const parsed = JSON.parse(raw);
-        state = normalizeState(parsed);
-      } catch (_) {}
+        state = normalizeState(JSON.parse(raw));
+      } catch (e) {
+        console.warn("Local storage load failed", e);
+      }
+    }
+
+    function normalizeObligation(raw) {
+      if (!raw || typeof raw !== "object") return null;
+      const kind = raw.kind === "family" ? "family" : "credit";
+      return {
+        id: String(raw.id || uid()),
+        kind,
+        name: String(raw.name || (kind === "family" ? "Займ родственнику" : "Кредит")),
+        lender: String(raw.lender || ""),
+        startDate: raw.startDate || todayISO(),
+        initialPrincipal: num(raw.initialPrincipal ?? raw.balance ?? 0),
+        apr: kind === "credit" ? num(raw.apr ?? 0) : 0,
+        minPayment: num(raw.minPayment ?? 0),
+        scheduledPayment: num(raw.scheduledPayment ?? raw.minPayment ?? 0),
+        paymentDay: clampDay(raw.paymentDay),
+        notes: String(raw.notes || ""),
+        active: raw.active !== false
+      };
+    }
+
+    function normalizeTransaction(raw) {
+      if (!raw || typeof raw !== "object") return null;
+      return {
+        id: String(raw.id || uid()),
+        obligationId: String(raw.obligationId || ""),
+        date: raw.date || todayISO(),
+        amount: num(raw.amount ?? 0),
+        kind: ["payment", "extra", "repayment"].includes(raw.kind) ? raw.kind : "payment",
+        note: String(raw.note || "")
+      };
     }
 
     function normalizeState(raw) {
@@ -599,68 +564,28 @@
       }
 
       if (raw.ui && typeof raw.ui === "object") {
-        base.ui.freeAmount = asNumber(raw.ui.freeAmount || base.ui.freeAmount);
+        base.ui.freeAmount = num(raw.ui.freeAmount ?? base.ui.freeAmount);
         base.ui.optimizeMode = raw.ui.optimizeMode === "payment" ? "payment" : "interest";
       } else {
-        if (raw.extraPayment !== undefined) base.ui.freeAmount = asNumber(raw.extraPayment);
-        if (raw.strategy) base.ui.optimizeMode = raw.strategy === "snowball" ? "payment" : "interest";
+        if (raw.extraPayment !== undefined) base.ui.freeAmount = num(raw.extraPayment);
+        if (raw.strategy === "snowball") base.ui.optimizeMode = "payment";
       }
 
       base.meta.updatedAt = raw.meta?.updatedAt || null;
-      base.meta.source = raw.meta?.source || "local";
+      base.meta.source = raw.meta?.source || (Array.isArray(raw.debts) ? "migrated" : "local");
       return base;
     }
 
-    function normalizeObligation(raw) {
-      if (!raw || typeof raw !== "object") return null;
-      return {
-        id: String(raw.id || uid()),
-        kind: raw.kind === "family" ? "family" : "credit",
-        name: String(raw.name || (raw.kind === "family" ? "Займ родственнику" : "Кредит")),
-        lender: String(raw.lender || ""),
-        startDate: raw.startDate || todayISO(),
-        initialPrincipal: asNumber(raw.initialPrincipal ?? raw.balance ?? 0),
-        apr: raw.kind === "family" ? 0 : asNumber(raw.apr ?? 0),
-        minPayment: asNumber(raw.minPayment ?? 0),
-        scheduledPayment: asNumber(raw.scheduledPayment ?? raw.minPayment ?? 0),
-        paymentDay: raw.paymentDay ? clampDay(raw.paymentDay) : null,
-        notes: String(raw.notes || ""),
-        active: raw.active !== false
-      };
-    }
-
-    function normalizeTransaction(raw) {
-      if (!raw || typeof raw !== "object") return null;
-      return {
-        id: String(raw.id || uid()),
-        obligationId: String(raw.obligationId || ""),
-        date: raw.date || todayISO(),
-        amount: asNumber(raw.amount ?? 0),
-        kind: ["payment", "extra", "repayment"].includes(raw.kind) ? raw.kind : "payment",
-        note: String(raw.note || "")
-      };
-    }
-
-    function setNotice(message, tone = "neutral") {
-      els.notice.textContent = message;
-      els.notice.style.borderColor = tone === "good" ? "rgba(16,185,129,.24)" : tone === "warn" ? "rgba(245,158,11,.24)" : "rgba(21,32,51,.10)";
-      els.notice.style.background = tone === "good" ? "rgba(16,185,129,.08)" : tone === "warn" ? "rgba(245,158,11,.09)" : "rgba(255,255,255,.72)";
-    }
-
-    function setSyncState(text, cls = "blue") {
-      els.syncPill.className = `pill ${cls}`;
-      els.syncPill.textContent = text;
-    }
-
-    function saveState() {
+    function persist() {
       state.meta.updatedAt = new Date().toISOString();
-      state.meta.source = hasRemote ? "firebase" : "local";
-      localSave();
+      saveLocal();
+      setUpdatedPill();
+
       if (!db) {
-        setSyncState("Сохранено локально", "amber");
-        setUpdatedPill();
+        setSyncState("Локальный режим", "amber");
         return;
       }
+
       clearTimeout(saveTimer);
       saveTimer = setTimeout(async () => {
         try {
@@ -669,117 +594,34 @@
             serverUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
           }, { merge: true });
           setSyncState("Синхронизировано", "green");
-          setNotice("Данные сохранены и отправлены в общий документ Firebase.", "good");
-        } catch (error) {
-          console.error(error);
-          setSyncState("Офлайн / локально", "amber");
+        } catch (e) {
+          console.error(e);
+          setSyncState("Локальный режим", "amber");
           setNotice("Не удалось записать в Firebase. Данные сохранены только локально в этом браузере.", "warn");
         }
       }, 180);
-      setUpdatedPill();
-    }
-
-    function setUpdatedPill() {
-      if (state.meta.updatedAt) {
-        const d = new Date(state.meta.updatedAt);
-        if (!Number.isNaN(d.getTime())) {
-          els.updatedPill.textContent = `Последнее обновление: ${d.toLocaleString("ru-RU")}`;
-          return;
-        }
-      }
-      els.updatedPill.textContent = "Последнее обновление: —";
     }
 
     function getTransactionsFor(id) {
-      return state.transactions
-        .filter((tx) => tx.obligationId === id)
-        .slice()
-        .sort((a, b) => a.date.localeCompare(b.date));
+      return state.transactions.filter((tx) => tx.obligationId === id).slice().sort((a, b) => a.date.localeCompare(b.date));
     }
 
-    function computeStatus(obligation, now = new Date()) {
-      const txs = getTransactionsFor(obligation.id);
-      const start = parseDate(obligation.startDate) || now;
-      const today = now;
-      let principal = Math.max(0, asNumber(obligation.initialPrincipal));
-      let interest = 0;
-      let paid = 0;
-      let lastDate = start > today ? today : start;
-
-      const applyPayment = (amount) => {
-        let remaining = Math.max(0, amount);
-        if (obligation.kind === "credit") {
-          if (interest > 0) {
-            const usedInterest = Math.min(interest, remaining);
-            interest -= usedInterest;
-            remaining -= usedInterest;
-          }
-          if (remaining > 0) {
-            principal = Math.max(0, principal - remaining);
-            remaining = 0;
-          }
-        } else {
-          principal = Math.max(0, principal - remaining);
-          remaining = 0;
-        }
-      };
-
-      for (const tx of txs) {
-        const txDate = parseDate(tx.date);
-        if (!txDate || txDate > today) continue;
-        if (txDate > lastDate) {
-          const days = daysBetween(lastDate, txDate);
-          if (obligation.kind === "credit" && obligation.apr > 0) {
-            interest += principal * (asNumber(obligation.apr) / 100) * (days / 365);
-          }
-          lastDate = txDate;
-        }
-        const amount = Math.max(0, asNumber(tx.amount));
-        paid += amount;
-        applyPayment(amount);
-      }
-
-      if (today > lastDate) {
-        const days = daysBetween(lastDate, today);
-        if (obligation.kind === "credit" && obligation.apr > 0) {
-          interest += principal * (asNumber(obligation.apr) / 100) * (days / 365);
-        }
-      }
-
-      const balance = Math.max(0, principal + interest);
-      const currentPayment = Math.max(0, asNumber(obligation.scheduledPayment || obligation.minPayment || 0));
-      const payoff = forecastObligation(obligation, { principal, interest }, MAX_FORECAST_MONTHS, 0);
-      const nextDue = nextDueDate(obligation, now);
-
-      return {
-        principal,
-        interest,
-        balance,
-        paid,
-        currentPayment,
-        monthsToPayoff: payoff.monthsToZero,
-        forecastInterest: payoff.totalInterest,
-        nextDue
-      };
-    }
-
-    function forecastObligation(obligation, base, months = MAX_FORECAST_MONTHS, extra = 0) {
-      let principal = Math.max(0, asNumber(base.principal));
-      let interest = Math.max(0, asNumber(base.interest));
+    function forecastObligation(ob, base, months = MAX_FORECAST_MONTHS, extra = 0) {
+      let principal = Math.max(0, num(base.principal));
+      let interest = Math.max(0, num(base.interest));
       let totalInterest = 0;
       const balances = [Math.max(0, principal + interest)];
+      const monthlyPayment = Math.max(0, num(ob.scheduledPayment || ob.minPayment || 0));
 
       function applyPayment(amount) {
         let remaining = Math.max(0, amount);
-        if (obligation.kind === "credit") {
+        if (ob.kind === "credit") {
           if (interest > 0) {
             const usedInterest = Math.min(interest, remaining);
             interest -= usedInterest;
             remaining -= usedInterest;
           }
-          if (remaining > 0) {
-            principal = Math.max(0, principal - remaining);
-          }
+          if (remaining > 0) principal = Math.max(0, principal - remaining);
         } else {
           principal = Math.max(0, principal - remaining);
         }
@@ -788,11 +630,9 @@
       if (extra > 0) applyPayment(extra);
 
       let monthsToZero = balances[0] <= 0 ? 0 : null;
-      const monthlyPayment = Math.max(0, asNumber(obligation.scheduledPayment || obligation.minPayment || 0));
-
       for (let month = 1; month <= months; month++) {
-        if (obligation.kind === "credit" && asNumber(obligation.apr) > 0) {
-          const monthInterest = principal * (asNumber(obligation.apr) / 100 / 12);
+        if (ob.kind === "credit" && num(ob.apr) > 0 && principal > 0) {
+          const monthInterest = principal * (num(ob.apr) / 100 / 12);
           interest += monthInterest;
           totalInterest += monthInterest;
         }
@@ -810,27 +650,86 @@
       return { balances, totalInterest, monthsToZero };
     }
 
-    function nextDueDate(obligation, now = new Date()) {
-      const payment = Math.max(0, asNumber(obligation.scheduledPayment || obligation.minPayment || 0));
+    function nextDueDate(ob, now = new Date()) {
+      const payment = Math.max(0, num(ob.scheduledPayment || ob.minPayment || 0));
       if (!payment) return null;
-      if (obligation.paymentDay) {
-        const day = clampDay(obligation.paymentDay);
-        if (!day) return null;
-        const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const thisMonthLast = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-        const safeThisMonthDay = Math.min(day, thisMonthLast);
-        const candidate = new Date(now.getFullYear(), now.getMonth(), safeThisMonthDay);
-        if (candidate < todayMidnight) {
-          const nextMonthLast = new Date(now.getFullYear(), now.getMonth() + 2, 0).getDate();
-          const safeNextMonthDay = Math.min(day, nextMonthLast);
-          return toISODate(new Date(now.getFullYear(), now.getMonth() + 1, safeNextMonthDay));
-        }
-        return toISODate(candidate);
+      if (!ob.paymentDay) return toISODate(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 30));
+
+      const day = clampDay(ob.paymentDay);
+      if (!day) return null;
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const thisMonthLast = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+      const thisMonthDay = Math.min(day, thisMonthLast);
+      const candidate = new Date(now.getFullYear(), now.getMonth(), thisMonthDay);
+      if (candidate < today) {
+        const nextMonthLast = new Date(now.getFullYear(), now.getMonth() + 2, 0).getDate();
+        const nextMonthDay = Math.min(day, nextMonthLast);
+        return toISODate(new Date(now.getFullYear(), now.getMonth() + 1, nextMonthDay));
       }
-      return toISODate(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 30));
+      return toISODate(candidate);
     }
 
-    function computeDerivedState() {
+    function computeStatus(ob, now = new Date()) {
+      const txs = getTransactionsFor(ob.id).filter((tx) => {
+        const d = parseDate(tx.date);
+        return d && d <= now;
+      });
+
+      const start = parseDate(ob.startDate) || now;
+      let principal = Math.max(0, num(ob.initialPrincipal));
+      let interest = 0;
+      let paid = 0;
+      let lastDate = start < now ? start : now;
+
+      function applyPayment(amount) {
+        let remaining = Math.max(0, amount);
+        if (ob.kind === "credit") {
+          if (interest > 0) {
+            const usedInterest = Math.min(interest, remaining);
+            interest -= usedInterest;
+            remaining -= usedInterest;
+          }
+          if (remaining > 0) principal = Math.max(0, principal - remaining);
+        } else {
+          principal = Math.max(0, principal - remaining);
+        }
+      }
+
+      for (const tx of txs) {
+        const txDate = parseDate(tx.date);
+        if (!txDate) continue;
+        if (txDate > lastDate) {
+          const days = daysBetween(lastDate, txDate);
+          if (ob.kind === "credit" && num(ob.apr) > 0 && principal > 0) {
+            interest += principal * (num(ob.apr) / 100) * (days / 365);
+          }
+          lastDate = txDate;
+        }
+        const amount = Math.max(0, num(tx.amount));
+        paid += amount;
+        applyPayment(amount);
+      }
+
+      if (now > lastDate && ob.kind === "credit" && num(ob.apr) > 0 && principal > 0) {
+        const days = daysBetween(lastDate, now);
+        interest += principal * (num(ob.apr) / 100) * (days / 365);
+      }
+
+      const balance = Math.max(0, principal + interest);
+      const forecast = forecastObligation(ob, { principal, interest }, MAX_FORECAST_MONTHS, 0);
+
+      return {
+        principal,
+        interest,
+        balance,
+        paid,
+        currentPayment: Math.max(0, num(ob.scheduledPayment || ob.minPayment || 0)),
+        monthsToPayoff: forecast.monthsToZero,
+        nextDue: nextDueDate(ob, now)
+      };
+    }
+
+    function computeDerived() {
       const now = new Date();
       const statuses = new Map();
       state.obligations.forEach((ob) => statuses.set(ob.id, computeStatus(ob, now)));
@@ -841,46 +740,44 @@
         interest: 0,
         family: 0,
         scheduled: 0,
-        paid: 0
+        activeCount: 0,
+        creditCount: 0,
+        familyCount: 0
       };
 
       for (const ob of state.obligations) {
         const st = statuses.get(ob.id);
+        if (!st) continue;
         totals.balance += st.balance;
         totals.principal += st.principal;
         totals.interest += st.interest;
-        totals.paid += st.paid;
-        totals.scheduled += Math.max(0, asNumber(ob.scheduledPayment || ob.minPayment || 0));
+        totals.scheduled += st.currentPayment;
+        if (st.balance > 0) totals.activeCount += 1;
+        if (ob.kind === "credit") totals.creditCount += 1; else totals.familyCount += 1;
         if (ob.kind === "family") totals.family += st.balance;
       }
 
-      const portfolioForecast = forecastPortfolio(state.obligations, statuses, MAX_FORECAST_MONTHS);
-      const recommendations = buildRecommendations(statuses);
-      const upcoming = buildUpcoming(statuses);
-
-      return { now, statuses, totals, portfolioForecast, recommendations, upcoming };
-    }
-
-    function forecastPortfolio(obligations, statuses, months = MAX_FORECAST_MONTHS) {
-      const series = Array.from({ length: months + 1 }, () => 0);
-      obligations.forEach((ob) => {
+      const forecastSeries = Array.from({ length: MAX_FORECAST_MONTHS + 1 }, () => 0);
+      state.obligations.forEach((ob) => {
         const st = statuses.get(ob.id);
-        const fc = forecastObligation(ob, { principal: st.principal, interest: st.interest }, months, 0);
-        fc.balances.forEach((value, idx) => {
-          series[idx] += value;
-        });
+        if (!st) return;
+        const fc = forecastObligation(ob, { principal: st.principal, interest: st.interest }, MAX_FORECAST_MONTHS, 0);
+        fc.balances.forEach((val, idx) => { forecastSeries[idx] += val; });
       });
-      return series;
+
+      const rec = buildRecommendations(statuses);
+      const upcoming = buildUpcoming(statuses);
+      return { now, statuses, totals, forecastSeries, rec, upcoming };
     }
 
     function buildRecommendations(statuses) {
-      const amount = Math.max(0, asNumber(state.ui.freeAmount));
+      const amount = Math.max(0, num(state.ui.freeAmount));
       const candidates = state.obligations
         .filter((ob) => ob.active !== false)
         .map((ob) => ({ ob, st: statuses.get(ob.id) }))
         .filter(({ st }) => st && st.balance > 0);
 
-      if (!candidates.length) return { interest: null, payment: null, amount };
+      if (!candidates.length) return { amount, interest: null, payment: null };
 
       const scored = candidates.map(({ ob, st }) => {
         const base = forecastObligation(ob, st, MAX_FORECAST_MONTHS, 0);
@@ -888,93 +785,49 @@
         return {
           ob,
           st,
+          base,
+          withExtra,
           interestSavings: base.totalInterest - withExtra.totalInterest,
           monthsSaved: Math.max(0, base.monthsToZero - withExtra.monthsToZero),
           balance: st.balance,
-          apr: asNumber(ob.apr),
-          payment: Math.max(0, asNumber(ob.scheduledPayment || ob.minPayment || 0))
+          apr: num(ob.apr),
+          payment: st.currentPayment
         };
       });
 
-      const interestBest = scored
-        .slice()
-        .sort((a, b) => b.interestSavings - a.interestSavings || b.apr - a.apr || a.balance - b.balance)[0];
-
-      const paymentBest = scored
-        .slice()
-        .sort((a, b) => b.monthsSaved - a.monthsSaved || a.balance - b.balance || b.payment - a.payment)[0];
-
-      return {
-        amount,
-        interest: interestBest,
-        payment: paymentBest
-      };
+      const interest = scored.slice().sort((a, b) => b.interestSavings - a.interestSavings || b.apr - a.apr || a.balance - b.balance)[0];
+      const payment = scored.slice().sort((a, b) => b.monthsSaved - a.monthsSaved || a.balance - b.balance || b.payment - a.payment)[0];
+      return { amount, interest, payment };
     }
 
     function buildUpcoming(statuses) {
-      const items = state.obligations
+      return state.obligations
         .map((ob) => ({ ob, st: statuses.get(ob.id) }))
-        .filter(({ st, ob }) => st && st.balance > 0 && (ob.scheduledPayment > 0 || ob.minPayment > 0))
-        .map(({ ob, st }) => {
-          const due = nextDueDate(ob);
-          return {
-            id: ob.id,
-            title: ob.name,
-            kind: ob.kind,
-            date: due,
-            amount: st.currentPayment,
-            lender: ob.lender || ""
-          };
-        })
+        .filter(({ ob, st }) => st && st.balance > 0 && (ob.scheduledPayment > 0 || ob.minPayment > 0))
+        .map(({ ob, st }) => ({
+          id: ob.id,
+          title: ob.name,
+          lender: ob.lender || "",
+          kind: ob.kind,
+          date: st.nextDue,
+          amount: st.currentPayment
+        }))
         .filter((x) => x.date)
         .sort((a, b) => String(a.date).localeCompare(String(b.date)));
-      return items;
-    }
-
-    function recommendationLabel(rec, mode) {
-      if (!rec) return "Нет активных обязательств";
-      if (mode === "payment") {
-        return `${money(rec.amount)} → ${rec.ob.name}`;
-      }
-      return `${money(rec.amount)} → ${rec.ob.name}`;
     }
 
     function renderSummary() {
       const t = derived.totals;
-      const creditCount = state.obligations.filter((o) => o.kind === "credit").length;
-      const familyCount = state.obligations.filter((o) => o.kind === "family").length;
-      const activeCount = state.obligations.filter((o) => (derived.statuses.get(o.id)?.balance || 0) > 0).length;
-
       els.summaryGrid.innerHTML = `
-        <div class="metric blue">
-          <div class="label">Общий остаток</div>
-          <div class="value">${money(t.balance)}</div>
-          <div class="sub">Кредиты + займы родственникам</div>
-        </div>
-        <div class="metric green">
-          <div class="label">Остаток тела</div>
-          <div class="value">${money(t.principal)}</div>
-          <div class="sub">Без начисленных процентов</div>
-        </div>
-        <div class="metric amber">
-          <div class="label">Начисленные проценты</div>
-          <div class="value">${money(t.interest)}</div>
-          <div class="sub">На текущую дату</div>
-        </div>
-        <div class="metric red">
-          <div class="label">Регулярные платежи в месяц</div>
-          <div class="value">${money(t.scheduled)}</div>
-          <div class="sub">По всем активным обязательствам</div>
-        </div>
-        <div class="metric">
-          <div class="label">Активных записей</div>
-          <div class="value">${activeCount}</div>
-          <div class="sub">Кредитов: ${creditCount} · Родственникам: ${familyCount}</div>
-        </div>
+        <div class="metric blue"><div class="label">Общий остаток</div><div class="value">${money(t.balance)}</div><div class="sub">Кредиты + займы родственникам</div></div>
+        <div class="metric green"><div class="label">Остаток тела</div><div class="value">${money(t.principal)}</div><div class="sub">Без начисленных процентов</div></div>
+        <div class="metric amber"><div class="label">Начисленные проценты</div><div class="value">${money(t.interest)}</div><div class="sub">На текущую дату</div></div>
+        <div class="metric red"><div class="label">Регулярные платежи в месяц</div><div class="value">${money(t.scheduled)}</div><div class="sub">По всем активным обязательствам</div></div>
+        <div class="metric"><div class="label">Активных записей</div><div class="value">${t.activeCount}</div><div class="sub">Кредитов: ${t.creditCount} · Родственникам: ${t.familyCount}</div></div>
       `;
     }
 
-    function renderObligationCards(kind) {
+    function renderObligationList(kind) {
       const container = kind === "credit" ? els.creditList : els.familyList;
       const items = state.obligations.filter((o) => o.kind === kind);
 
@@ -987,12 +840,13 @@
         const st = derived.statuses.get(ob.id) || { principal: 0, interest: 0, balance: 0, paid: 0, monthsToPayoff: 0, currentPayment: 0, nextDue: null };
         const progress = ob.initialPrincipal > 0 ? Math.max(0, Math.min(100, ((ob.initialPrincipal - st.balance) / ob.initialPrincipal) * 100)) : 0;
         const payoffText = st.balance <= 0 ? "Закрыт" : `${st.monthsToPayoff || MAX_FORECAST_MONTHS} мес.`;
+
         return `
           <div class="ob-card ${ob.kind}">
             <div class="ob-top">
               <div>
                 <span class="badge ${ob.kind}">${ob.kind === "credit" ? "Кредит" : "Займ родственнику"}</span>
-                <div class="ob-title">${esc(ob.name || (ob.kind === "credit" ? "Кредит" : "Займ"))}</div>
+                <div class="ob-title">${esc(ob.name)}</div>
                 <div class="ob-meta">${esc(ob.lender || "Без банка / без указания")}</div>
               </div>
               <div class="balance-box">
@@ -1010,50 +864,22 @@
               <div class="stat"><div class="k">Погашение</div><div class="v">${payoffText}</div></div>
             </div>
 
-            <div class="edit-grid four">
-              <div class="field">
-                <label>Тип</label>
+            <div class="edit-grid">
+              <div class="field"><label>Тип</label>
                 <select id="kind-${ob.id}">
                   <option value="credit" ${ob.kind === "credit" ? "selected" : ""}>Кредит</option>
                   <option value="family" ${ob.kind === "family" ? "selected" : ""}>Займ родственнику</option>
                 </select>
               </div>
-              <div class="field">
-                <label>Название</label>
-                <input id="name-${ob.id}" value="${esc(ob.name)}" />
-              </div>
-              <div class="field">
-                <label>Банк / человек</label>
-                <input id="lender-${ob.id}" value="${esc(ob.lender)}" />
-              </div>
-              <div class="field">
-                <label>Дата начала</label>
-                <input id="start-${ob.id}" type="date" value="${esc(ob.startDate)}" />
-              </div>
-              <div class="field">
-                <label>Сумма</label>
-                <input id="principal-${ob.id}" type="number" step="0.01" value="${ob.initialPrincipal}" />
-              </div>
-              <div class="field">
-                <label>Ставка, %</label>
-                <input id="apr-${ob.id}" type="number" step="0.01" value="${ob.apr}" />
-              </div>
-              <div class="field">
-                <label>Мин. платёж</label>
-                <input id="min-${ob.id}" type="number" step="0.01" value="${ob.minPayment}" />
-              </div>
-              <div class="field">
-                <label>Плановый платёж</label>
-                <input id="scheduled-${ob.id}" type="number" step="0.01" value="${ob.scheduledPayment}" />
-              </div>
-              <div class="field">
-                <label>День месяца</label>
-                <input id="day-${ob.id}" type="number" min="1" max="31" value="${ob.paymentDay || ""}" />
-              </div>
-              <div class="field" style="grid-column: span 3;">
-                <label>Примечание</label>
-                <input id="notes-${ob.id}" value="${esc(ob.notes)}" />
-              </div>
+              <div class="field"><label>Название</label><input id="name-${ob.id}" value="${esc(ob.name)}" /></div>
+              <div class="field"><label>Банк / человек</label><input id="lender-${ob.id}" value="${esc(ob.lender)}" /></div>
+              <div class="field"><label>Дата начала</label><input id="start-${ob.id}" type="date" value="${esc(ob.startDate)}" /></div>
+              <div class="field"><label>Сумма</label><input id="principal-${ob.id}" type="number" step="0.01" value="${ob.initialPrincipal}" /></div>
+              <div class="field"><label>Ставка, %</label><input id="apr-${ob.id}" type="number" step="0.01" value="${ob.apr}" /></div>
+              <div class="field"><label>Мин. платёж</label><input id="min-${ob.id}" type="number" step="0.01" value="${ob.minPayment}" /></div>
+              <div class="field"><label>Плановый платёж</label><input id="scheduled-${ob.id}" type="number" step="0.01" value="${ob.scheduledPayment}" /></div>
+              <div class="field"><label>День месяца</label><input id="day-${ob.id}" type="number" min="1" max="31" value="${ob.paymentDay || ""}" /></div>
+              <div class="field" style="grid-column: span 3;"><label>Примечание</label><input id="notes-${ob.id}" value="${esc(ob.notes)}" /></div>
             </div>
 
             <div class="card-actions">
@@ -1073,6 +899,7 @@
         els.txList.innerHTML = `<div class="empty">Платежей пока нет. Добавьте прошлые и будущие операции через форму выше.</div>`;
         return;
       }
+
       els.txList.innerHTML = txs.map((tx) => {
         const ob = state.obligations.find((x) => x.id === tx.obligationId);
         const label = tx.kind === "extra" ? "Досрочка" : tx.kind === "repayment" ? "Возврат" : "Платёж";
@@ -1091,66 +918,12 @@
       }).join("");
     }
 
-    function renderRecommendations() {
-      const rec = derived.recommendations;
-      const mode = state.ui.optimizeMode;
-      const amount = rec.amount;
-      if (!amount || amount <= 0) {
-        els.recommendations.innerHTML = `<div class="empty">Введите свободную сумму, и система предложит лучший сценарий её использования.</div>`;
-        return;
-      }
-
-      const interest = rec.interest;
-      const payment = rec.payment;
-      const active = mode === "payment" ? payment : interest;
-      const activeClass = active && active.ob.kind === "family" ? "family" : "";
-      const currentLabel = mode === "payment" ? "Для снижения обязательного платежа" : "Для снижения переплаты";
-      const actionText = active ? `${money(amount)} → ${active.ob.name}` : "—";
-
-      els.recommendations.innerHTML = `
-        <div class="recommend-card ${activeClass}">
-          <div class="row">
-            <div>
-              <span class="badge ${active ? active.ob.kind : "credit"}">${currentLabel}</span>
-              <h3>${active ? esc(active.ob.name) : "Нет подходящих обязательств"}</h3>
-              <div class="meta">${active ? `Остаток: ${money(active.balance)} · Ставка: ${active.apr.toFixed(2)}% · Плановый платёж: ${money(active.payment)}` : "Пока нет активных долгов для анализа."}</div>
-              <div class="meta" style="margin-top:6px;">Лучший сценарий: ${actionText}</div>
-              <div class="meta" style="margin-top:6px;">Оценка через 24 месяца: ${active ? (mode === "interest" ? `экономия процентов около ${money(active.interestSavings)}` : `ускорение закрытия примерно на ${active.monthsSaved} мес.`) : "—"}</div>
-            </div>
-            <div style="text-align:right; min-width: 180px;">
-              <div class="small-note">Режим</div>
-              <div style="font-size:24px;font-weight:900;">${mode === "interest" ? "Переплата" : "Платёж"}</div>
-              <div class="small-note" style="margin-top:6px;">Свободная сумма: ${money(amount)}</div>
-            </div>
-          </div>
-          <div class="card-actions" style="margin-top:12px;">
-            <button class="primary" type="button" onclick="applyRecommendedExtra()">Записать досрочный платёж</button>
-            <button class="ghost" type="button" onclick="toggleOptimizeMode()">Переключить режим</button>
-          </div>
-        </div>
-
-        <div class="recommend-card ${payment && payment.ob.kind === "family" ? "family" : ""}">
-          <div class="row">
-            <div>
-              <span class="badge ${payment ? payment.ob.kind : "family"}">Второй сценарий</span>
-              <h3>${payment ? esc(payment.ob.name) : "Нет второго сценария"}</h3>
-              <div class="meta">${payment ? `Показывает, куда лучше направить сумму, если цель — быстрее разгрузить ежемесячные обязательства.` : ""}</div>
-            </div>
-            <div style="text-align:right; min-width: 180px;">
-              <div class="small-note">Альтернатива</div>
-              <div style="font-size:20px;font-weight:900;">${payment ? money(payment.balance) : "—"}</div>
-              <div class="small-note" style="margin-top:6px;">Остаток сейчас</div>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
     function renderUpcoming() {
       if (!derived.upcoming.length) {
         els.upcomingList.innerHTML = `<div class="empty">Пока нет будущих дат платежей. Укажите день месяца и плановый платёж в карточке.</div>`;
         return;
       }
+
       els.upcomingList.innerHTML = derived.upcoming.slice(0, 8).map((item) => `
         <div class="tx-item">
           <div class="left">
@@ -1162,32 +935,90 @@
       `).join("");
     }
 
+    function renderRecommendations() {
+      const rec = derived.rec;
+      const amount = rec.amount;
+      if (!amount || amount <= 0) {
+        els.recommendations.innerHTML = `<div class="empty">Введите свободную сумму, и система предложит лучший сценарий её использования.</div>`;
+        return;
+      }
+
+      const mode = state.ui.optimizeMode;
+      const primary = mode === "interest" ? rec.interest : rec.payment;
+      const secondary = mode === "interest" ? rec.payment : rec.interest;
+      const primaryKind = primary ? (primary.ob.kind === "family" ? "family" : "credit") : "credit";
+      const secondaryKind = secondary ? (secondary.ob.kind === "family" ? "family" : "credit") : "credit";
+      const primaryLabel = mode === "interest" ? "Для снижения переплаты" : "Для ускорения разгрузки платежей";
+      const secondaryLabel = mode === "interest" ? "Альтернатива по сроку" : "Альтернатива по переплате";
+      const primaryEffect = mode === "interest"
+        ? `Экономия процентов: ${money(primary ? primary.interestSavings : 0)}`
+        : `Сокращение срока: ${primary ? primary.monthsSaved : 0} мес.`;
+      const secondaryEffect = mode === "interest"
+        ? `Сокращение срока: ${secondary ? secondary.monthsSaved : 0} мес.`
+        : `Экономия процентов: ${money(secondary ? secondary.interestSavings : 0)}`;
+
+      els.recommendations.innerHTML = `
+        <div class="recommend-card ${primaryKind === "family" ? "family" : ""}">
+          <div class="row">
+            <div>
+              <span class="badge ${primaryKind}">${primaryLabel}</span>
+              <h3>${primary ? esc(primary.ob.name) : "Нет активных обязательств"}</h3>
+              <div class="meta">${primary ? `Остаток: ${money(primary.balance)} · Ставка: ${primary.apr.toFixed(2)}% · Платёж: ${money(primary.payment)}` : ""}</div>
+              <div class="meta" style="margin-top:6px;">${primaryEffect}</div>
+            </div>
+            <div style="text-align:right; min-width:180px;">
+              <div class="small-note">Свободная сумма</div>
+              <div style="font-size:24px; font-weight:900;">${money(amount)}</div>
+              <div class="small-note" style="margin-top:6px;">Режим: ${mode === "interest" ? "переплата" : "платёж"}</div>
+            </div>
+          </div>
+          <div class="card-actions" style="margin-top:12px;">
+            <button class="primary" type="button" onclick="applyRecommendedExtra()">Записать досрочный платёж</button>
+            <button class="ghost" type="button" onclick="toggleOptimizeMode()">Переключить режим</button>
+          </div>
+        </div>
+
+        <div class="recommend-card ${secondaryKind === "family" ? "family" : ""}">
+          <div class="row">
+            <div>
+              <span class="badge ${secondaryKind}">${secondaryLabel}</span>
+              <h3>${secondary ? esc(secondary.ob.name) : "Нет альтернативы"}</h3>
+              <div class="meta">${secondary ? `Остаток: ${money(secondary.balance)} · Платёж: ${money(secondary.payment)}` : ""}</div>
+              <div class="meta" style="margin-top:6px;">${secondaryEffect}</div>
+            </div>
+            <div style="text-align:right; min-width:180px;">
+              <div class="small-note">Текущий остаток</div>
+              <div style="font-size:24px; font-weight:900;">${secondary ? money(secondary.balance) : "—"}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
     function renderCharts() {
       const labels = Array.from({ length: MAX_FORECAST_MONTHS + 1 }, (_, i) => i === 0 ? "Сейчас" : `${i} мес.`);
-      const totalSeries = derived.portfolioForecast;
-      const balanceCtx = document.getElementById("balanceChart");
-      const breakdownCtx = document.getElementById("breakdownChart");
+      const totalSeries = derived.forecastSeries;
 
-      if (!charts.balance) {
-        charts.balance = new Chart(balanceCtx, {
+      if (!charts.forecast) {
+        charts.forecast = new Chart(els.forecastChart, {
           type: "line",
           data: {
             labels,
             datasets: [{
               label: "Остаток долга",
               data: totalSeries,
-              tension: .35,
+              tension: 0.35,
               fill: true,
               borderWidth: 3,
               pointRadius: 2
             }]
           },
-          options: chartOptions()
+          options: chartLineOptions()
         });
       } else {
-        charts.balance.data.labels = labels;
-        charts.balance.data.datasets[0].data = totalSeries;
-        charts.balance.update();
+        charts.forecast.data.labels = labels;
+        charts.forecast.data.datasets[0].data = totalSeries;
+        charts.forecast.update();
       }
 
       const principal = Math.max(0, derived.totals.principal);
@@ -1195,56 +1026,72 @@
       const family = Math.max(0, derived.totals.family);
 
       if (!charts.breakdown) {
-        charts.breakdown = new Chart(breakdownCtx, {
+        charts.breakdown = new Chart(els.breakdownChart, {
           type: "doughnut",
           data: {
             labels: ["Тело кредитов", "Начисленные проценты", "Долги родственникам"],
-            datasets: [{
-              data: [principal, interest, family],
-              borderWidth: 0
-            }]
+            datasets: [{ data: [principal, interest, family], borderWidth: 0 }]
           },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { position: "bottom", labels: { usePointStyle: true, boxWidth: 10, padding: 18 } }
-            },
-            cutout: "62%"
-          }
+          options: chartDoughnutOptions()
         });
       } else {
         charts.breakdown.data.datasets[0].data = [principal, interest, family];
         charts.breakdown.update();
       }
+
+      const after12 = derived.forecastSeries[12] ?? 0;
+      const after24 = derived.forecastSeries[24] ?? 0;
+      const monthsToZero = state.obligations.length
+        ? Math.max(...state.obligations.map((ob) => derived.statuses.get(ob.id)?.monthsToPayoff || 0))
+        : 0;
+
+      els.forecastStats.innerHTML = `
+        <div class="mini-stat"><div class="k">Сейчас</div><div class="v">${money(derived.totals.balance)}</div></div>
+        <div class="mini-stat"><div class="k">Через 12 мес.</div><div class="v">${money(after12)}</div></div>
+        <div class="mini-stat"><div class="k">Полное закрытие</div><div class="v">${monthsToZero ? `${monthsToZero} мес.` : "—"}</div></div>
+      `;
+
+      els.breakdownStats.innerHTML = `
+        <div class="mini-stat"><div class="k">Тело</div><div class="v">${money(principal)}</div></div>
+        <div class="mini-stat"><div class="k">Проценты</div><div class="v">${money(interest)}</div></div>
+        <div class="mini-stat"><div class="k">Родственникам</div><div class="v">${money(family)}</div></div>
+      `;
     }
 
-    function chartOptions() {
+    function chartLineOptions() {
       return {
         responsive: true,
         maintainAspectRatio: false,
         scales: {
           y: {
             beginAtZero: true,
-            ticks: {
-              callback: (v) => money(v).replace(/\,00\s?₽/, " ₽")
-            },
-            grid: { color: "rgba(21,32,51,.08)" }
+            grid: { color: "rgba(18,32,51,0.08)" },
+            ticks: { callback: (v) => money(v) }
           },
           x: { grid: { display: false } }
         },
         plugins: {
           legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: (ctx) => ` ${money(ctx.parsed.y)}`
-            }
+          tooltip: { callbacks: { label: (ctx) => ` ${money(ctx.parsed.y)}` } }
+        }
+      };
+    }
+
+    function chartDoughnutOptions() {
+      return {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: "62%",
+        plugins: {
+          legend: {
+            position: "bottom",
+            labels: { usePointStyle: true, boxWidth: 10, padding: 18 }
           }
         }
       };
     }
 
-    function renderObligationSelectors() {
+    function renderTxOptions() {
       const options = state.obligations.length
         ? state.obligations.map((ob) => `<option value="${ob.id}">${esc(ob.name)} (${ob.kind === "credit" ? "кредит" : "родственник"})</option>`).join("")
         : `<option value="">Сначала добавьте обязательство</option>`;
@@ -1252,45 +1099,54 @@
     }
 
     function renderAll() {
-      derived = computeDerivedState();
-      renderObligationSelectors();
+      derived = computeDerived();
+      renderTxOptions();
       renderSummary();
-      renderObligationCards("credit");
-      renderObligationCards("family");
+      renderObligationList("credit");
+      renderObligationList("family");
       renderTransactions();
       renderRecommendations();
       renderUpcoming();
       renderCharts();
       setUpdatedPill();
-      setSyncState(hasRemote ? "Синхронизировано" : "Локальный режим", hasRemote ? "green" : "amber");
+      if (!db) setSyncState("Локальный режим", "amber");
+      if (db && remoteLoaded) setSyncState("Синхронизировано", "green");
     }
 
     function addObligation(kind) {
       const prefix = kind === "credit" ? "newCredit" : "newFamily";
-      const item = {
+      const name = document.getElementById(`${prefix}Name`).value.trim();
+      const lender = document.getElementById(`${prefix}Lender`).value.trim();
+      const startDate = document.getElementById(`${prefix}Start`).value || todayISO();
+      const principal = num(document.getElementById(`${prefix}Principal`).value);
+      const apr = kind === "credit" ? num(document.getElementById("newCreditApr").value) : 0;
+      const minPayment = kind === "credit" ? num(document.getElementById("newCreditMinPayment").value) : 0;
+      const scheduledPayment = kind === "credit"
+        ? num(document.getElementById("newCreditScheduled").value) || minPayment
+        : num(document.getElementById("newFamilyScheduled").value);
+      const paymentDay = clampDay(kind === "credit" ? document.getElementById("newCreditDay").value : document.getElementById("newFamilyDay").value);
+      const notes = document.getElementById(`${prefix}Notes`).value.trim();
+
+      if (!principal || principal <= 0) {
+        setNotice(kind === "credit" ? "Для кредита нужно указать сумму." : "Для займа родственнику нужно указать сумму.", "warn");
+        return;
+      }
+
+      state.obligations.unshift({
         id: uid(),
         kind,
-        name: emptyStringToNull(document.getElementById(`${prefix}Name`).value) || (kind === "credit" ? "Новый кредит" : "Новый займ"),
-        lender: emptyStringToNull(document.getElementById(`${prefix}Lender`).value) || "",
-        startDate: document.getElementById(`${prefix}Start`).value || todayISO(),
-        initialPrincipal: asNumber(document.getElementById(`${prefix}Principal`).value),
-        apr: kind === "credit" ? asNumber(document.getElementById("newCreditApr").value) : 0,
-        minPayment: kind === "credit" ? asNumber(document.getElementById("newCreditMinPayment").value) : 0,
-        scheduledPayment: kind === "credit" ? asNumber(document.getElementById("newCreditScheduled").value) || asNumber(document.getElementById("newCreditMinPayment").value) : asNumber(document.getElementById("newFamilyScheduled").value),
-        paymentDay: kind === "credit" ? clampDay(document.getElementById("newCreditDay").value) : clampDay(document.getElementById("newFamilyDay").value),
-        notes: emptyStringToNull(document.getElementById(`${prefix}Notes`).value) || "",
+        name: name || (kind === "credit" ? "Новый кредит" : "Новый займ"),
+        lender,
+        startDate,
+        initialPrincipal: principal,
+        apr,
+        minPayment,
+        scheduledPayment,
+        paymentDay,
+        notes,
         active: true
-      };
-      if (!item.initialPrincipal && kind === "credit") {
-        setNotice("Для кредита нужно указать сумму.", "warn");
-        return;
-      }
-      if (!item.initialPrincipal && kind === "family") {
-        setNotice("Для займа родственнику нужно указать сумму.", "warn");
-        return;
-      }
-      state.obligations.unshift(item);
-      saveState();
+      });
+      persist();
       renderAll();
       setNotice(kind === "credit" ? "Кредит добавлен." : "Займ родственнику добавлен.", "good");
     }
@@ -1300,22 +1156,22 @@
       if (idx < 0) return;
       const prev = state.obligations[idx];
       const nextKind = document.getElementById(`kind-${id}`).value === "family" ? "family" : "credit";
-      const next = {
+      const next = normalizeObligation({
         ...prev,
         kind: nextKind,
-        name: emptyStringToNull(document.getElementById(`name-${id}`).value) || prev.name,
-        lender: emptyStringToNull(document.getElementById(`lender-${id}`).value) || "",
+        name: document.getElementById(`name-${id}`).value.trim() || prev.name,
+        lender: document.getElementById(`lender-${id}`).value.trim(),
         startDate: document.getElementById(`start-${id}`).value || todayISO(),
-        initialPrincipal: asNumber(document.getElementById(`principal-${id}`).value),
-        apr: nextKind === "credit" ? asNumber(document.getElementById(`apr-${id}`).value) : 0,
-        minPayment: asNumber(document.getElementById(`min-${id}`).value),
-        scheduledPayment: asNumber(document.getElementById(`scheduled-${id}`).value),
+        initialPrincipal: num(document.getElementById(`principal-${id}`).value),
+        apr: nextKind === "credit" ? num(document.getElementById(`apr-${id}`).value) : 0,
+        minPayment: num(document.getElementById(`min-${id}`).value),
+        scheduledPayment: num(document.getElementById(`scheduled-${id}`).value),
         paymentDay: clampDay(document.getElementById(`day-${id}`).value),
-        notes: emptyStringToNull(document.getElementById(`notes-${id}`).value) || "",
+        notes: document.getElementById(`notes-${id}`).value.trim(),
         active: true
-      };
-      state.obligations[idx] = normalizeObligation(next);
-      saveState();
+      });
+      state.obligations[idx] = next;
+      persist();
       renderAll();
       setNotice("Карточка сохранена.", "good");
     }
@@ -1326,7 +1182,7 @@
       if (!confirm(`Удалить запись «${ob.name}» и все связанные платежи?`)) return;
       state.obligations = state.obligations.filter((x) => x.id !== id);
       state.transactions = state.transactions.filter((tx) => tx.obligationId !== id);
-      saveState();
+      persist();
       renderAll();
       setNotice("Запись удалена.", "good");
     }
@@ -1337,21 +1193,20 @@
         setNotice("Сначала выберите обязательство для платежа.", "warn");
         return;
       }
-      const amount = amountOverride != null ? asNumber(amountOverride) : asNumber(document.getElementById("newTxAmount").value);
+      const amount = amountOverride != null ? num(amountOverride) : num(document.getElementById("newTxAmount").value);
       if (!amount || amount <= 0) {
         setNotice("Введите сумму платежа.", "warn");
         return;
       }
-      const tx = {
+      state.transactions.unshift({
         id: uid(),
         obligationId,
         date: els.newTxDate.value || todayISO(),
         amount,
-        kind: kindOverride || document.getElementById("newTxKind").value,
-        note: emptyStringToNull(document.getElementById("newTxNote").value) || ""
-      };
-      state.transactions.unshift(tx);
-      saveState();
+        kind: kindOverride || els.newTxKind.value,
+        note: document.getElementById("newTxNote").value.trim()
+      });
+      persist();
       renderAll();
       document.getElementById("newTxAmount").value = "";
       document.getElementById("newTxNote").value = "";
@@ -1360,25 +1215,9 @@
 
     function deleteTransaction(id) {
       state.transactions = state.transactions.filter((tx) => tx.id !== id);
-      saveState();
+      persist();
       renderAll();
       setNotice("Запись платежа удалена.", "good");
-    }
-
-    function applyRecommendedExtra() {
-      const rec = derived.recommendations;
-      const mode = state.ui.optimizeMode;
-      const candidate = mode === "payment" ? rec.payment : rec.interest;
-      if (!candidate) {
-        setNotice("Нечего применять: нет активных обязательств.", "warn");
-        return;
-      }
-      els.newTxKind.value = candidate.ob.kind === "family" ? "repayment" : "extra";
-      els.newTxObligation.value = candidate.ob.id;
-      els.newTxDate.value = todayISO();
-      document.getElementById("newTxAmount").value = state.ui.freeAmount || 0;
-      document.getElementById("newTxNote").value = mode === "payment" ? "Свободная сумма для снижения обязательного платежа" : "Свободная сумма для снижения переплаты";
-      addTransaction(candidate.ob.kind === "family" ? "repayment" : (mode === "interest" ? "extra" : "payment"));
     }
 
     function fillExtraFrom(id) {
@@ -1386,18 +1225,37 @@
       if (!ob) return;
       els.newTxObligation.value = id;
       els.newTxDate.value = todayISO();
+      els.newTxKind.value = ob.kind === "family" ? "repayment" : "extra";
       document.getElementById("newTxAmount").value = state.ui.freeAmount || 0;
-      document.getElementById("newTxKind").value = ob.kind === "family" ? "repayment" : "extra";
-      document.getElementById("newTxNote").value = `Досрочный платёж по ${ob.name}`;
-      setNotice(`Заполнена форма досрочного платежа для «${ob.name}».`, "good");
+      document.getElementById("newTxNote").value = `Платёж по ${ob.name}`;
+      setNotice(`Заполнена форма для «${ob.name}».`, "good");
       window.scrollTo({ top: document.getElementById("txForm").getBoundingClientRect().top + window.scrollY - 12, behavior: "smooth" });
     }
 
     function toggleOptimizeMode() {
       state.ui.optimizeMode = state.ui.optimizeMode === "interest" ? "payment" : "interest";
-      document.getElementById("optimizeMode").value = state.ui.optimizeMode;
-      saveState();
+      els.optimizeMode.value = state.ui.optimizeMode;
+      persist();
       renderAll();
+    }
+
+    function applyRecommendedExtra() {
+      const rec = derived.rec;
+      const amount = rec.amount;
+      const target = state.ui.optimizeMode === "interest" ? rec.interest : rec.payment;
+      if (!target) {
+        setNotice("Нечего применять: нет активных обязательств.", "warn");
+        return;
+      }
+
+      els.newTxObligation.value = target.ob.id;
+      els.newTxDate.value = todayISO();
+      document.getElementById("newTxAmount").value = amount;
+      els.newTxKind.value = target.ob.kind === "family" ? "repayment" : (state.ui.optimizeMode === "interest" ? "extra" : "payment");
+      document.getElementById("newTxNote").value = state.ui.optimizeMode === "interest"
+        ? "Свободная сумма для снижения переплаты"
+        : "Свободная сумма для снижения регулярного платежа";
+      addTransaction(els.newTxKind.value, target.ob.id, amount);
     }
 
     function exportJSON() {
@@ -1414,115 +1272,110 @@
       const raw = prompt("Вставьте JSON резервной копии, экспортированный этим сайтом.");
       if (!raw) return;
       try {
-        const parsed = JSON.parse(raw);
-        state = normalizeState(parsed);
-        saveState();
+        state = normalizeState(JSON.parse(raw));
+        persist();
         renderAll();
         setNotice("Резервная копия загружена.", "good");
-      } catch (error) {
+      } catch (e) {
         alert("Не удалось прочитать JSON.");
       }
     }
 
     function resetAll() {
-      if (!confirm("Удалить все данные из этого общего документа? Это действие повлияет на вас и брата.")) return;
+      if (!confirm("Удалить все данные? Это действие повлияет на вас и брата.")) return;
       state = stateTemplate();
-      saveState();
+      persist();
       renderAll();
       setNotice("Все данные очищены.", "warn");
     }
 
-    function bindStaticControls() {
+    function on(id, event, handler) {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener(event, handler);
+    }
+
+    function bindControls() {
       els.newCreditStart.value = todayISO();
       els.newFamilyStart.value = todayISO();
       els.newTxDate.value = todayISO();
       els.freeAmount.value = state.ui.freeAmount;
       els.optimizeMode.value = state.ui.optimizeMode;
 
-      document.getElementById("addCreditBtn").addEventListener("click", () => addObligation("credit"));
-      document.getElementById("addFamilyBtn").addEventListener("click", () => addObligation("family"));
-      document.getElementById("addTxBtn").addEventListener("click", () => addTransaction());
-      document.getElementById("applyFreeBtn").addEventListener("click", () => applyRecommendedExtra());
-      document.getElementById("exportBtn").addEventListener("click", exportJSON);
-      document.getElementById("importBtn").addEventListener("click", importJSON);
-      document.getElementById("resetBtn").addEventListener("click", resetAll);
-      els.freeAmount.addEventListener("input", () => {
-        state.ui.freeAmount = asNumber(els.freeAmount.value);
-        saveState();
-        renderAll();
-      });
-      els.optimizeMode.addEventListener("change", () => {
-        state.ui.optimizeMode = els.optimizeMode.value === "payment" ? "payment" : "interest";
-        saveState();
-        renderAll();
-      });
-      const newTxKindEl = document.getElementById("newTxKind");
+      on("addCreditBtn", "click", () => addObligation("credit"));
+      on("addFamilyBtn", "click", () => addObligation("family"));
+      on("addTxBtn", "click", () => addTransaction());
+      on("applyFreeBtn", "click", () => applyRecommendedExtra());
+      on("exportBtn", "click", exportJSON);
+      on("importBtn", "click", importJSON);
+      on("resetBtn", "click", resetAll);
 
-      if (newTxKindEl) {
-      newTxKindEl.addEventListener("change", () => {
-      if (newTxKindEl.value === "repayment") {
-      setNotice("Вы выбрали возврат родственнику. Подставьте нужную карточку и сумму.", "good");
-      }
+      on("freeAmount", "input", () => {
+        state.ui.freeAmount = num(els.freeAmount.value);
+        persist();
+        renderAll();
       });
+      on("optimizeMode", "change", () => {
+        state.ui.optimizeMode = els.optimizeMode.value === "payment" ? "payment" : "interest";
+        persist();
+        renderAll();
+      });
+
+      const newTxKindEl = document.getElementById("newTxKind");
+      if (newTxKindEl) {
+        newTxKindEl.addEventListener("change", () => {
+          if (newTxKindEl.value === "repayment") {
+            setNotice("Вы выбрали возврат родственнику. Подставьте нужную карточку и сумму.", "good");
+          }
+        });
       }
+    }
 
     async function initFirebase() {
       try {
         firebase.initializeApp(firebaseConfig);
         db = firebase.firestore();
         setSyncState("Подключение Firebase…", "amber");
-        const docRef = db.collection(FIRESTORE_PATH.collection).doc(FIRESTORE_PATH.doc);
 
+        const docRef = db.collection(FIRESTORE_PATH.collection).doc(FIRESTORE_PATH.doc);
         const snapshot = await docRef.get();
+
         if (snapshot.exists) {
           state = normalizeState(snapshot.data());
-          hasRemote = true;
-          localSave();
-          setSyncState("Синхронизировано", "green");
+          remoteLoaded = true;
+          saveLocal();
           setNotice("Загружена общая версия данных из Firebase.", "good");
         } else {
-          hasRemote = true;
-          setSyncState("Пустой общий документ", "amber");
-          setNotice("Firestore готов. Добавьте первые записи — они сохранятся в общий документ.", "warn");
+          remoteLoaded = true;
           await docRef.set({ ...state, serverUpdatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+          setNotice("Firestore готов. Создан пустой общий документ.", "warn");
         }
 
         docRef.onSnapshot((snapshot) => {
-  try {
-    if (!snapshot.exists) {
-      hasRemote = true;
-      setSyncState("Firebase подключен", "green");
-      return;
-    }
-
-    const data = snapshot.data();
-
-    if (!data || typeof data !== "object") {
-      setSyncState("Пустая база", "amber");
-      return;
-    }
-
-    const remote = normalizeState(data);
-
-    isApplyingRemote = true;
-    state = remote;
-
-    localSave();
-    renderAll();
-
-    isApplyingRemote = false;
-    hasRemote = true;
-
-    setSyncState("Синхронизировано", "green");
-    setNotice("Данные успешно синхронизированы.", "good");
-
-  } catch (e) {
-    console.error(e);
-    setSyncState("Ошибка синхронизации", "amber");
-  }
-});
-      } catch (error) {
-        console.error(error);
+          try {
+            if (!snapshot.exists) {
+              remoteLoaded = true;
+              setSyncState("Firebase подключен", "green");
+              return;
+            }
+            const data = snapshot.data();
+            if (!data || typeof data !== "object") return;
+            state = normalizeState(data);
+            remoteLoaded = true;
+            saveLocal();
+            renderAll();
+            setSyncState("Синхронизировано", "green");
+            setNotice("Данные обновлены из общего документа Firebase.", "good");
+          } catch (e) {
+            console.error(e);
+            setSyncState("Ошибка синхронизации", "amber");
+          }
+        }, (error) => {
+          console.error(error);
+          setSyncState("Ошибка Firebase", "amber");
+          setNotice("Подписка на Firestore не работает. Проверьте правила базы и доступ к документу.", "warn");
+        });
+      } catch (e) {
+        console.error(e);
         setSyncState("Локальный режим", "amber");
         setNotice("Firebase не подключился. Сайт продолжит работать локально в этом браузере.", "warn");
       }
@@ -1532,26 +1385,17 @@
       window.saveObligation = saveObligation;
       window.deleteObligation = deleteObligation;
       window.deleteTransaction = deleteTransaction;
-      window.applyRecommendedExtra = applyRecommendedExtra;
-      window.toggleOptimizeMode = toggleOptimizeMode;
       window.fillExtraFrom = fillExtraFrom;
+      window.toggleOptimizeMode = toggleOptimizeMode;
+      window.applyRecommendedExtra = applyRecommendedExtra;
     }
 
-    function seedFromLocalIfNeeded() {
-      if (!state.obligations.length && !state.transactions.length) {
-        state.ui.freeAmount = 5000;
-        state.ui.optimizeMode = "interest";
-      }
-    }
-
-    async function boot() {
-      loadLocalBackup();
-      seedFromLocalIfNeeded();
-      bindStaticControls();
+    function boot() {
+      loadLocal();
+      bindControls();
       attachGlobals();
       renderAll();
-      await initFirebase();
-      renderAll();
+      initFirebase();
     }
 
     boot();
