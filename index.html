@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Калькулятор кредитов</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<style>
+body{font-family:Arial, sans-serif;background:#f5f7fb;margin:0;padding:20px}
+.container{max-width:900px;margin:auto}
+.card{background:#fff;border-radius:12px;padding:16px;margin-bottom:16px;box-shadow:0 4px 12px rgba(0,0,0,0.05)}
+input{width:100%;padding:8px;margin-top:4px}
+button{padding:8px 12px;margin-top:10px;cursor:pointer}
+.row{display:flex;gap:10px}
+.row>div{flex:1}
+</style>
+</head>
+<body>
+<div class="container">
+<h2>Калькулятор кредитов (общий)</h2>
+<div class="card">
+<div id="debts"></div>
+<button onclick="addDebt()">Добавить кредит</button>
+</div>
+<div class="card">
+<label>Дополнительный платёж:</label>
+<input id="extra" type="number" />
+</div>
+<div class="card">
+<h3>Итог</h3>
+<div id="result"></div>
+</div>
+</div>
+<script>
+// ВСТАВЬТЕ СЮДА firebaseConfig
+const firebaseConfig = {
+  apiKey: "AIzaSyCRdVG_2qgNDPxxfEa3CSeeyjvpdmbcjWE",
+  authDomain: "credit-payments-2026.firebaseapp.com",
+  projectId: "credit-payments-2026",
+  storageBucket: "credit-payments-2026.firebasestorage.app",
+  messagingSenderId: "1097721168288",
+  appId: "1:1097721168288:web:47881d4673567d6b0424c5",
+  measurementId: "G-637GBQSDW6"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+let state = {debts:[],extra:0};
+
+function render(){
+ const el=document.getElementById("debts");
+ el.innerHTML="";
+ state.debts.forEach((d,i)=>{
+  el.innerHTML+=`<div class='card'>
+  <div class='row'>
+  <div><label>Название</label><input value='${d.name}' onchange='update(${i},"name",this.value)'/></div>
+  <div><label>Остаток</label><input type='number' value='${d.balance}' onchange='update(${i},"balance",this.value)'/></div>
+  <div><label>%</label><input type='number' value='${d.apr}' onchange='update(${i},"apr",this.value)'/></div>
+  <div><label>Мин платёж</label><input type='number' value='${d.min}' onchange='update(${i},"min",this.value)'/></div>
+  </div>
+  <button onclick='removeDebt(${i})'>Удалить</button>
+  </div>`;
+ });
+ document.getElementById("extra").value=state.extra;
+ calc();
+}
+
+function update(i,key,val){state.debts[i][key]=Number(val)||val;save()}
+function addDebt(){state.debts.push({name:"Кредит",balance:0,apr:0,min:0});save()}
+function removeDebt(i){state.debts.splice(i,1);save()}
+
+document.getElementById("extra").onchange=(e)=>{state.extra=Number(e.target.value);save()};
+
+function calc(){
+ let total=state.debts.reduce((s,d)=>s+d.balance,0);
+ document.getElementById("result").innerText="Общий долг: "+total.toFixed(2);
+}
+
+function save(){
+ db.collection("shared").doc("data").set(state);
+}
+
+function load(){
+ db.collection("shared").doc("data").onSnapshot(doc=>{
+  if(doc.exists){state=doc.data();render();}
+ });
+}
+
+load();
+</script>
+</body>
+</html>
