@@ -1,93 +1,1538 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Калькулятор кредитов</title>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<style>
-body{font-family:Arial, sans-serif;background:#f5f7fb;margin:0;padding:20px}
-.container{max-width:900px;margin:auto}
-.card{background:#fff;border-radius:12px;padding:16px;margin-bottom:16px;box-shadow:0 4px 12px rgba(0,0,0,0.05)}
-input{width:100%;padding:8px;margin-top:4px}
-button{padding:8px 12px;margin-top:10px;cursor:pointer}
-.row{display:flex;gap:10px}
-.row>div{flex:1}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Финансовый трекер кредитов</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #eef3fb;
+      --panel: rgba(255,255,255,.9);
+      --panel-strong: #ffffff;
+      --text: #152033;
+      --muted: #6b7280;
+      --line: rgba(21,32,51,.10);
+      --shadow: 0 20px 50px rgba(21,32,51,.08);
+      --blue: #3b82f6;
+      --blue-soft: rgba(59,130,246,.12);
+      --green: #10b981;
+      --green-soft: rgba(16,185,129,.12);
+      --amber: #f59e0b;
+      --amber-soft: rgba(245,158,11,.14);
+      --red: #ef4444;
+      --red-soft: rgba(239,68,68,.12);
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(59,130,246,.12), transparent 32%),
+        radial-gradient(circle at top right, rgba(16,185,129,.10), transparent 26%),
+        var(--bg);
+      color: var(--text);
+    }
+
+    .shell { max-width: 1560px; margin: 0 auto; padding: 24px; }
+
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      padding: 18px 20px; border: 1px solid var(--line); border-radius: 28px;
+      background: rgba(255,255,255,.66); backdrop-filter: blur(16px); box-shadow: var(--shadow);
+      margin-bottom: 18px;
+    }
+    .title-wrap h1 { margin: 0; font-size: clamp(24px, 2.5vw, 36px); letter-spacing: -0.03em; }
+    .title-wrap p { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+    .status-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: flex-end; }
+    .pill {
+      display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 999px;
+      font-size: 13px; border: 1px solid var(--line); background: rgba(255,255,255,.85);
+    }
+    .pill strong { font-weight: 700; }
+    .pill.blue { background: var(--blue-soft); color: #1d4ed8; border-color: rgba(59,130,246,.18); }
+    .pill.green { background: var(--green-soft); color: #0f766e; border-color: rgba(16,185,129,.18); }
+    .pill.amber { background: var(--amber-soft); color: #92400e; border-color: rgba(245,158,11,.18); }
+
+    .toolbar { display: flex; gap: 10px; flex-wrap: wrap; }
+    button, .btn {
+      border: 0; border-radius: 14px; padding: 11px 14px; cursor: pointer; font-weight: 700;
+      background: #e5eefb; color: #1d4ed8; transition: transform .16s ease, box-shadow .16s ease, opacity .16s ease;
+      box-shadow: 0 8px 18px rgba(29,78,216,.08);
+    }
+    button:hover, .btn:hover { transform: translateY(-1px); }
+    button.primary { background: linear-gradient(135deg, #2563eb, #4f46e5); color: #fff; }
+    button.ghost { background: rgba(255,255,255,.8); color: var(--text); border: 1px solid var(--line); box-shadow: none; }
+    button.danger { background: var(--red-soft); color: #b91c1c; box-shadow: none; }
+
+    .notice {
+      margin: 12px 0 18px; padding: 14px 16px; border-radius: 18px; background: rgba(255,255,255,.72);
+      border: 1px solid var(--line); color: var(--muted); font-size: 14px;
+    }
+
+    .summary-grid {
+      display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; margin: 18px 0 18px;
+    }
+    .metric {
+      background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px;
+      box-shadow: var(--shadow); min-height: 108px;
+    }
+    .metric .label { color: var(--muted); font-size: 13px; margin-bottom: 8px; }
+    .metric .value { font-size: clamp(22px, 2vw, 34px); font-weight: 800; letter-spacing: -0.03em; }
+    .metric .sub { margin-top: 8px; color: var(--muted); font-size: 13px; }
+    .metric.blue { background: linear-gradient(180deg, rgba(59,130,246,.14), rgba(255,255,255,.92)); }
+    .metric.green { background: linear-gradient(180deg, rgba(16,185,129,.14), rgba(255,255,255,.92)); }
+    .metric.amber { background: linear-gradient(180deg, rgba(245,158,11,.16), rgba(255,255,255,.92)); }
+    .metric.red { background: linear-gradient(180deg, rgba(239,68,68,.14), rgba(255,255,255,.92)); }
+
+    .layout { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(360px, .95fr); gap: 18px; align-items: start; }
+    .stack { display: grid; gap: 18px; }
+    .panel {
+      background: var(--panel); border: 1px solid var(--line); border-radius: 28px; box-shadow: var(--shadow);
+      padding: 18px;
+    }
+    .panel h2 { margin: 0 0 8px; font-size: 21px; letter-spacing: -0.02em; }
+    .panel .subtitle { margin: 0 0 16px; color: var(--muted); font-size: 14px; }
+    .section-head { display:flex; justify-content: space-between; align-items: center; gap: 14px; margin-bottom: 12px; }
+    .section-head .hint { color: var(--muted); font-size: 13px; }
+
+    .ob-list, .tx-list, .rec-list, .upcoming-list { display: grid; gap: 12px; }
+    .ob-card {
+      background: rgba(255,255,255,.92); border: 1px solid var(--line); border-radius: 22px; padding: 16px;
+      display: grid; gap: 12px;
+    }
+    .ob-card.credit { border-left: 6px solid var(--blue); }
+    .ob-card.family { border-left: 6px solid var(--green); }
+    .ob-top { display:flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+    .ob-title { font-size: 18px; font-weight: 800; margin: 2px 0 4px; letter-spacing: -0.02em; }
+    .ob-meta { color: var(--muted); font-size: 13px; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px;
+      font-size: 12px; font-weight: 800; letter-spacing: .01em;
+    }
+    .badge.credit { background: var(--blue-soft); color: #1d4ed8; }
+    .badge.family { background: var(--green-soft); color: #047857; }
+    .balance-box {
+      min-width: 170px; text-align: right; padding: 10px 12px; border-radius: 18px; background: rgba(21,32,51,.04);
+      border: 1px solid rgba(21,32,51,.06);
+    }
+    .balance-box .label { color: var(--muted); font-size: 12px; }
+    .balance-box .value { font-size: 24px; font-weight: 900; margin-top: 4px; letter-spacing: -0.03em; }
+
+    .progress {
+      width: 100%; height: 12px; border-radius: 999px; background: rgba(21,32,51,.07); overflow: hidden;
+    }
+    .progress > div { height: 100%; border-radius: inherit; background: linear-gradient(90deg, #60a5fa, #34d399); }
+
+    .stats-row {
+      display:grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px;
+    }
+    .stat {
+      padding: 10px 12px; border-radius: 16px; background: rgba(21,32,51,.04); border: 1px solid rgba(21,32,51,.05);
+    }
+    .stat .k { color: var(--muted); font-size: 12px; margin-bottom: 4px; }
+    .stat .v { font-size: 16px; font-weight: 800; }
+
+    .edit-grid {
+      display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px;
+    }
+    .edit-grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .edit-grid.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .field { display:grid; gap: 6px; }
+    .field label { color: var(--muted); font-size: 12px; font-weight: 700; }
+    input, select, textarea {
+      width: 100%; border-radius: 14px; border: 1px solid rgba(21,32,51,.12); background: #fff; color: var(--text);
+      padding: 11px 12px; outline: none; font: inherit;
+    }
+    textarea { min-height: 82px; resize: vertical; }
+    input:focus, select:focus, textarea:focus { border-color: rgba(59,130,246,.55); box-shadow: 0 0 0 4px rgba(59,130,246,.10); }
+    .card-actions { display:flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .small-note { color: var(--muted); font-size: 12px; }
+
+    .form-grid {
+      display:grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 10px; align-items: end;
+      margin-top: 12px;
+    }
+    .form-grid .field:nth-child(1) { grid-column: span 3; }
+    .form-grid .field:nth-child(2) { grid-column: span 3; }
+    .form-grid .field:nth-child(3) { grid-column: span 2; }
+    .form-grid .field:nth-child(4) { grid-column: span 2; }
+    .form-grid .field:nth-child(5) { grid-column: span 2; }
+    .form-grid .field:nth-child(6) { grid-column: span 2; }
+    .form-grid .field:nth-child(7) { grid-column: span 2; }
+    .form-grid .field:nth-child(8) { grid-column: span 2; }
+    .form-grid .field:nth-child(9) { grid-column: span 3; }
+    .form-grid .field:nth-child(10) { grid-column: span 3; }
+    .form-grid .field:nth-child(11) { grid-column: span 3; }
+    .form-grid .field:nth-child(12) { grid-column: span 12; }
+    .form-grid .full { grid-column: 1 / -1; }
+
+    .tx-item {
+      background: rgba(255,255,255,.92); border: 1px solid var(--line); border-radius: 18px; padding: 14px;
+      display:flex; justify-content: space-between; gap: 12px; align-items: flex-start;
+    }
+    .tx-item .left { display:grid; gap: 4px; }
+    .tx-item .title { font-weight: 800; }
+    .tx-item .meta { color: var(--muted); font-size: 13px; }
+    .tx-item .sum { font-weight: 900; font-size: 18px; text-align: right; }
+
+    .recommend-card {
+      border-radius: 22px; padding: 16px; background: linear-gradient(180deg, rgba(59,130,246,.10), rgba(255,255,255,.94));
+      border: 1px solid rgba(59,130,246,.16); margin-bottom: 12px;
+    }
+    .recommend-card.family { background: linear-gradient(180deg, rgba(16,185,129,.12), rgba(255,255,255,.94)); border-color: rgba(16,185,129,.16); }
+    .recommend-card .row { display:flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+    .recommend-card h3 { margin: 4px 0 6px; font-size: 18px; }
+    .recommend-card .meta { color: var(--muted); font-size: 13px; }
+
+    canvas { width: 100% !important; height: 290px !important; }
+    .chart-box { padding-top: 8px; }
+
+    .empty {
+      padding: 18px; border-radius: 18px; border: 1px dashed rgba(21,32,51,.18); color: var(--muted);
+      background: rgba(255,255,255,.7); text-align: center;
+    }
+
+    .footer-note { margin-top: 10px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+
+    @media (max-width: 1320px) {
+      .layout { grid-template-columns: 1fr; }
+      .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      canvas { height: 260px !important; }
+    }
+    @media (max-width: 760px) {
+      .shell { padding: 14px; }
+      .topbar { padding: 14px; border-radius: 22px; flex-direction: column; align-items: flex-start; }
+      .status-row { justify-content: flex-start; }
+      .summary-grid { grid-template-columns: 1fr; }
+      .stats-row, .edit-grid, .edit-grid.four, .edit-grid.two { grid-template-columns: 1fr; }
+      .form-grid .field { grid-column: 1 / -1 !important; }
+      .ob-top, .tx-item, .recommend-card .row { flex-direction: column; }
+      .balance-box { width: 100%; text-align: left; }
+    }
+  </style>
 </head>
 <body>
-<div class="container">
-<h2>Калькулятор кредитов (общий)</h2>
-<div class="card">
-<div id="debts"></div>
-<button onclick="addDebt()">Добавить кредит</button>
-</div>
-<div class="card">
-<label>Дополнительный платёж:</label>
-<input id="extra" type="number" />
-</div>
-<div class="card">
-<h3>Итог</h3>
-<div id="result"></div>
-</div>
-</div>
-<script>
-// ВСТАВЬТЕ СЮДА firebaseConfig
-const firebaseConfig = {
-  apiKey: "AIzaSyCRdVG_2qgNDPxxfEa3CSeeyjvpdmbcjWE",
-  authDomain: "credit-payments-2026.firebaseapp.com",
-  projectId: "credit-payments-2026",
-  storageBucket: "credit-payments-2026.firebasestorage.app",
-  messagingSenderId: "1097721168288",
-  appId: "1:1097721168288:web:47881d4673567d6b0424c5",
-  measurementId: "G-637GBQSDW6"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+  <div class="shell">
+    <div class="topbar">
+      <div class="title-wrap">
+        <h1>Финансовый трекер кредитов и займов</h1>
+        <p>Общая ссылка для вас и брата. История платежей, досрочки, долги родственникам, графики и рекомендации по свободной сумме.</p>
+      </div>
+      <div class="status-row">
+        <span class="pill blue" id="syncPill">Синхронизация: загрузка…</span>
+        <span class="pill" id="updatedPill">Последнее обновление: —</span>
+        <div class="toolbar">
+          <button class="ghost" id="exportBtn" type="button">Экспорт JSON</button>
+          <button class="ghost" id="importBtn" type="button">Импорт JSON</button>
+          <button class="danger" id="resetBtn" type="button">Сбросить всё</button>
+        </div>
+      </div>
+    </div>
 
-let state = {debts:[],extra:0};
+    <div class="notice" id="notice">Введите кредиты, займы у родственников и платежи. Остатки и графики пересчитываются автоматически после сохранения.</div>
 
-function render(){
- const el=document.getElementById("debts");
- el.innerHTML="";
- state.debts.forEach((d,i)=>{
-  el.innerHTML+=`<div class='card'>
-  <div class='row'>
-  <div><label>Название</label><input value='${d.name}' onchange='update(${i},"name",this.value)'/></div>
-  <div><label>Остаток</label><input type='number' value='${d.balance}' onchange='update(${i},"balance",this.value)'/></div>
-  <div><label>%</label><input type='number' value='${d.apr}' onchange='update(${i},"apr",this.value)'/></div>
-  <div><label>Мин платёж</label><input type='number' value='${d.min}' onchange='update(${i},"min",this.value)'/></div>
+    <div class="summary-grid" id="summaryGrid"></div>
+
+    <div class="layout">
+      <main class="stack">
+        <section class="panel">
+          <div class="section-head">
+            <div>
+              <h2>Кредиты</h2>
+              <div class="subtitle">Добавьте каждый кредит отдельной карточкой. Можно менять ставку, дату начала, регулярный платёж и день списания.</div>
+            </div>
+            <div class="hint">Остаток тела и проценты считаются отдельно</div>
+          </div>
+          <div class="ob-list" id="creditList"></div>
+
+          <div class="form-grid" id="creditAddForm">
+            <div class="field">
+              <label>Название</label>
+              <input id="newCreditName" placeholder="Ипотека / Карта / Кредит наличными" />
+            </div>
+            <div class="field">
+              <label>Банк</label>
+              <input id="newCreditLender" placeholder="Сбер / Тинькофф / ВТБ" />
+            </div>
+            <div class="field">
+              <label>Дата выдачи</label>
+              <input id="newCreditStart" type="date" />
+            </div>
+            <div class="field">
+              <label>Сумма</label>
+              <input id="newCreditPrincipal" type="number" step="0.01" placeholder="0" />
+            </div>
+            <div class="field">
+              <label>Ставка, %</label>
+              <input id="newCreditApr" type="number" step="0.01" placeholder="0" />
+            </div>
+            <div class="field">
+              <label>Мин. платёж</label>
+              <input id="newCreditMinPayment" type="number" step="0.01" placeholder="0" />
+            </div>
+            <div class="field">
+              <label>Плановый платёж</label>
+              <input id="newCreditScheduled" type="number" step="0.01" placeholder="0" />
+            </div>
+            <div class="field">
+              <label>День месяца</label>
+              <input id="newCreditDay" type="number" min="1" max="31" placeholder="1–31" />
+            </div>
+            <div class="field">
+              <label>Примечание</label>
+              <input id="newCreditNotes" placeholder="Например: досрочки только через приложение" />
+            </div>
+            <div class="field">
+              <label>&nbsp;</label>
+              <button class="primary" id="addCreditBtn" type="button">Добавить кредит</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="section-head">
+            <div>
+              <h2>Долги родственникам</h2>
+              <div class="subtitle">Удобно для займов у мамы, брата, друзей. Можно отмечать возвраты и видеть остаток без процентов.</div>
+            </div>
+            <div class="hint">Например: 40 / 50 тыс уже возвращено</div>
+          </div>
+          <div class="ob-list" id="familyList"></div>
+
+          <div class="form-grid" id="familyAddForm">
+            <div class="field">
+              <label>Кому / название</label>
+              <input id="newFamilyName" placeholder="Мама / Брат / Друг" />
+            </div>
+            <div class="field">
+              <label>От кого</label>
+              <input id="newFamilyLender" placeholder="например: семья" />
+            </div>
+            <div class="field">
+              <label>Дата займа</label>
+              <input id="newFamilyStart" type="date" />
+            </div>
+            <div class="field">
+              <label>Сумма</label>
+              <input id="newFamilyPrincipal" type="number" step="0.01" placeholder="0" />
+            </div>
+            <div class="field">
+              <label>Плановый платёж</label>
+              <input id="newFamilyScheduled" type="number" step="0.01" placeholder="0" />
+            </div>
+            <div class="field">
+              <label>День месяца</label>
+              <input id="newFamilyDay" type="number" min="1" max="31" placeholder="1–31" />
+            </div>
+            <div class="field">
+              <label>Примечание</label>
+              <input id="newFamilyNotes" placeholder="Например: вернуть до конца года" />
+            </div>
+            <div class="field">
+              <label>&nbsp;</label>
+              <button class="primary" id="addFamilyBtn" type="button">Добавить займ</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="section-head">
+            <div>
+              <h2>Платежи, досрочки и возвраты</h2>
+              <div class="subtitle">Каждое внесение фиксируется отдельной записью. После добавления платежа графики и остатки обновляются автоматически.</div>
+            </div>
+            <div class="hint">Можно ввести прошедшие платежи</div>
+          </div>
+
+          <div class="form-grid" id="txForm">
+            <div class="field">
+              <label>Операция</label>
+              <select id="newTxKind">
+                <option value="payment">Платёж по кредиту</option>
+                <option value="extra">Досрочное погашение</option>
+                <option value="repayment">Возврат родственнику</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Обязательство</label>
+              <select id="newTxObligation"></select>
+            </div>
+            <div class="field">
+              <label>Дата</label>
+              <input id="newTxDate" type="date" />
+            </div>
+            <div class="field">
+              <label>Сумма</label>
+              <input id="newTxAmount" type="number" step="0.01" placeholder="0" />
+            </div>
+            <div class="field full">
+              <label>Комментарий</label>
+              <input id="newTxNote" placeholder="Например: платёж по графику, досрочка, частичный возврат" />
+            </div>
+            <div class="field full">
+              <button class="primary" id="addTxBtn" type="button">Добавить запись</button>
+            </div>
+          </div>
+          <div class="tx-list" id="txList" style="margin-top:14px;"></div>
+        </section>
+      </main>
+
+      <aside class="stack">
+        <section class="panel">
+          <div class="section-head">
+            <div>
+              <h2>Свободная сумма и лучший сценарий</h2>
+              <div class="subtitle">Система предлагает, куда выгоднее направить досрочный платёж: для снижения переплаты или для ускоренного освобождения обязательного платежа.</div>
+            </div>
+          </div>
+          <div class="form-grid" style="margin-top:0;">
+            <div class="field">
+              <label>Свободная сумма</label>
+              <input id="freeAmount" type="number" step="0.01" placeholder="5000" />
+            </div>
+            <div class="field">
+              <label>Цель</label>
+              <select id="optimizeMode">
+                <option value="interest">Снизить переплату</option>
+                <option value="payment">Снизить регулярный платёж</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>&nbsp;</label>
+              <button class="primary" id="applyFreeBtn" type="button">Записать как досрочку</button>
+            </div>
+          </div>
+          <div class="rec-list" id="recommendations" style="margin-top:14px;"></div>
+        </section>
+
+        <section class="panel chart-box">
+          <div class="section-head">
+            <div>
+              <h2>График общего долга</h2>
+              <div class="subtitle">Прогноз на ближайшие 24 месяца с учётом текущих плановых платежей.</div>
+            </div>
+          </div>
+          <canvas id="balanceChart"></canvas>
+        </section>
+
+        <section class="panel chart-box">
+          <div class="section-head">
+            <div>
+              <h2>Структура долга сейчас</h2>
+              <div class="subtitle">Тело кредитов, начисленные проценты и долги родственникам.</div>
+            </div>
+          </div>
+          <canvas id="breakdownChart"></canvas>
+        </section>
+
+        <section class="panel">
+          <div class="section-head">
+            <div>
+              <h2>Ближайшие платежи</h2>
+              <div class="subtitle">Напоминание о том, что пора вносить по расписанию.</div>
+            </div>
+          </div>
+          <div class="upcoming-list" id="upcomingList"></div>
+        </section>
+      </aside>
+    </div>
+
+    <div class="footer-note">Сайт хранит данные в общем документе Firestore. Это значит, что вы с братом видите один и тот же список, а при необходимости можно сделать резервную копию через JSON.</div>
   </div>
-  <button onclick='removeDebt(${i})'>Удалить</button>
-  </div>`;
- });
- document.getElementById("extra").value=state.extra;
- calc();
-}
 
-function update(i,key,val){state.debts[i][key]=Number(val)||val;save()}
-function addDebt(){state.debts.push({name:"Кредит",balance:0,apr:0,min:0});save()}
-function removeDebt(i){state.debts.splice(i,1);save()}
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCRdVG_2qgNDPxxfEa3CSeeyjvpdmbcjWE",
+      authDomain: "credit-payments-2026.firebaseapp.com",
+      projectId: "credit-payments-2026",
+      storageBucket: "credit-payments-2026.firebasestorage.app",
+      messagingSenderId: "1097721168288",
+      appId: "1:1097721168288:web:47881d4673567d6b0424c5",
+      measurementId: "G-637GBQSDW6"
+    };
 
-document.getElementById("extra").onchange=(e)=>{state.extra=Number(e.target.value);save()};
+    const STORAGE_KEY = "credit_tracker_local_backup_v2";
+    const FIRESTORE_PATH = { collection: "shared", doc: "data" };
+    const MAX_FORECAST_MONTHS = 24;
 
-function calc(){
- let total=state.debts.reduce((s,d)=>s+d.balance,0);
- document.getElementById("result").innerText="Общий долг: "+total.toFixed(2);
-}
+    const fmtMoney = new Intl.NumberFormat("ru-RU", {
+      style: "currency",
+      currency: "RUB",
+      maximumFractionDigits: 2
+    });
 
-function save(){
- db.collection("shared").doc("data").set(state);
-}
+    const stateTemplate = () => ({
+      version: 2,
+      obligations: [],
+      transactions: [],
+      ui: {
+        freeAmount: 5000,
+        optimizeMode: "interest"
+      },
+      meta: {
+        updatedAt: null,
+        source: "local"
+      }
+    });
 
-function load(){
- db.collection("shared").doc("data").onSnapshot(doc=>{
-  if(doc.exists){state=doc.data();render();}
- });
-}
+    let state = stateTemplate();
+    let db = null;
+    let saveTimer = null;
+    let charts = { balance: null, breakdown: null };
+    let isApplyingRemote = false;
+    let hasRemote = false;
+    let derived = null;
 
-load();
-</script>
+    const els = {
+      syncPill: document.getElementById("syncPill"),
+      updatedPill: document.getElementById("updatedPill"),
+      notice: document.getElementById("notice"),
+      summaryGrid: document.getElementById("summaryGrid"),
+      creditList: document.getElementById("creditList"),
+      familyList: document.getElementById("familyList"),
+      txList: document.getElementById("txList"),
+      upcomingList: document.getElementById("upcomingList"),
+      recommendations: document.getElementById("recommendations"),
+      newCreditStart: document.getElementById("newCreditStart"),
+      newFamilyStart: document.getElementById("newFamilyStart"),
+      newTxDate: document.getElementById("newTxDate"),
+      freeAmount: document.getElementById("freeAmount"),
+      optimizeMode: document.getElementById("optimizeMode"),
+      newTxObligation: document.getElementById("newTxObligation")
+    };
+
+    function uid() {
+      return crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    function money(value) {
+      const n = Number(value);
+      return fmtMoney.format(Number.isFinite(n) ? n : 0);
+    }
+
+    function asNumber(value) {
+      const n = Number(String(value).replace(",", "."));
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function esc(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function todayISO() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function parseDate(value) {
+      if (!value) return null;
+      const d = new Date(`${value}T00:00:00`);
+      return Number.isNaN(d.getTime()) ? null : d;
+    }
+
+    function toISODate(date) {
+      return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+    }
+
+    function daysBetween(a, b) {
+      return Math.max(0, Math.floor((b.getTime() - a.getTime()) / 86400000));
+    }
+
+    function clampDay(day) {
+      const n = Math.max(1, Math.min(31, Math.floor(asNumber(day) || 0)));
+      return Number.isFinite(n) ? n : null;
+    }
+
+    function emptyStringToNull(value) {
+      const str = String(value ?? "").trim();
+      return str ? str : null;
+    }
+
+    function localSave() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function loadLocalBackup() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        state = normalizeState(parsed);
+      } catch (_) {}
+    }
+
+    function normalizeState(raw) {
+      const base = stateTemplate();
+      if (!raw || typeof raw !== "object") return base;
+
+      if (Array.isArray(raw.obligations)) {
+        base.obligations = raw.obligations.map(normalizeObligation).filter(Boolean);
+      } else if (Array.isArray(raw.debts)) {
+        base.obligations = raw.debts.map((d) => normalizeObligation({
+          id: d.id,
+          kind: "credit",
+          name: d.name,
+          lender: "",
+          startDate: todayISO(),
+          initialPrincipal: d.balance,
+          apr: d.apr,
+          minPayment: d.minPayment,
+          scheduledPayment: d.minPayment,
+          paymentDay: null,
+          notes: "",
+          active: true
+        })).filter(Boolean);
+      }
+
+      if (Array.isArray(raw.transactions)) {
+        base.transactions = raw.transactions.map(normalizeTransaction).filter(Boolean);
+      }
+
+      if (raw.ui && typeof raw.ui === "object") {
+        base.ui.freeAmount = asNumber(raw.ui.freeAmount || base.ui.freeAmount);
+        base.ui.optimizeMode = raw.ui.optimizeMode === "payment" ? "payment" : "interest";
+      } else {
+        if (raw.extraPayment !== undefined) base.ui.freeAmount = asNumber(raw.extraPayment);
+        if (raw.strategy) base.ui.optimizeMode = raw.strategy === "snowball" ? "payment" : "interest";
+      }
+
+      base.meta.updatedAt = raw.meta?.updatedAt || null;
+      base.meta.source = raw.meta?.source || "local";
+      return base;
+    }
+
+    function normalizeObligation(raw) {
+      if (!raw || typeof raw !== "object") return null;
+      return {
+        id: String(raw.id || uid()),
+        kind: raw.kind === "family" ? "family" : "credit",
+        name: String(raw.name || (raw.kind === "family" ? "Займ родственнику" : "Кредит")),
+        lender: String(raw.lender || ""),
+        startDate: raw.startDate || todayISO(),
+        initialPrincipal: asNumber(raw.initialPrincipal ?? raw.balance ?? 0),
+        apr: raw.kind === "family" ? 0 : asNumber(raw.apr ?? 0),
+        minPayment: asNumber(raw.minPayment ?? 0),
+        scheduledPayment: asNumber(raw.scheduledPayment ?? raw.minPayment ?? 0),
+        paymentDay: raw.paymentDay ? clampDay(raw.paymentDay) : null,
+        notes: String(raw.notes || ""),
+        active: raw.active !== false
+      };
+    }
+
+    function normalizeTransaction(raw) {
+      if (!raw || typeof raw !== "object") return null;
+      return {
+        id: String(raw.id || uid()),
+        obligationId: String(raw.obligationId || ""),
+        date: raw.date || todayISO(),
+        amount: asNumber(raw.amount ?? 0),
+        kind: ["payment", "extra", "repayment"].includes(raw.kind) ? raw.kind : "payment",
+        note: String(raw.note || "")
+      };
+    }
+
+    function setNotice(message, tone = "neutral") {
+      els.notice.textContent = message;
+      els.notice.style.borderColor = tone === "good" ? "rgba(16,185,129,.24)" : tone === "warn" ? "rgba(245,158,11,.24)" : "rgba(21,32,51,.10)";
+      els.notice.style.background = tone === "good" ? "rgba(16,185,129,.08)" : tone === "warn" ? "rgba(245,158,11,.09)" : "rgba(255,255,255,.72)";
+    }
+
+    function setSyncState(text, cls = "blue") {
+      els.syncPill.className = `pill ${cls}`;
+      els.syncPill.textContent = text;
+    }
+
+    function saveState() {
+      state.meta.updatedAt = new Date().toISOString();
+      state.meta.source = hasRemote ? "firebase" : "local";
+      localSave();
+      if (!db) {
+        setSyncState("Сохранено локально", "amber");
+        setUpdatedPill();
+        return;
+      }
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(async () => {
+        try {
+          await db.collection(FIRESTORE_PATH.collection).doc(FIRESTORE_PATH.doc).set({
+            ...state,
+            serverUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+          setSyncState("Синхронизировано", "green");
+          setNotice("Данные сохранены и отправлены в общий документ Firebase.", "good");
+        } catch (error) {
+          console.error(error);
+          setSyncState("Офлайн / локально", "amber");
+          setNotice("Не удалось записать в Firebase. Данные сохранены только локально в этом браузере.", "warn");
+        }
+      }, 180);
+      setUpdatedPill();
+    }
+
+    function setUpdatedPill() {
+      if (state.meta.updatedAt) {
+        const d = new Date(state.meta.updatedAt);
+        if (!Number.isNaN(d.getTime())) {
+          els.updatedPill.textContent = `Последнее обновление: ${d.toLocaleString("ru-RU")}`;
+          return;
+        }
+      }
+      els.updatedPill.textContent = "Последнее обновление: —";
+    }
+
+    function getTransactionsFor(id) {
+      return state.transactions
+        .filter((tx) => tx.obligationId === id)
+        .slice()
+        .sort((a, b) => a.date.localeCompare(b.date));
+    }
+
+    function computeStatus(obligation, now = new Date()) {
+      const txs = getTransactionsFor(obligation.id);
+      const start = parseDate(obligation.startDate) || now;
+      const today = now;
+      let principal = Math.max(0, asNumber(obligation.initialPrincipal));
+      let interest = 0;
+      let paid = 0;
+      let lastDate = start > today ? today : start;
+
+      const applyPayment = (amount) => {
+        let remaining = Math.max(0, amount);
+        if (obligation.kind === "credit") {
+          if (interest > 0) {
+            const usedInterest = Math.min(interest, remaining);
+            interest -= usedInterest;
+            remaining -= usedInterest;
+          }
+          if (remaining > 0) {
+            principal = Math.max(0, principal - remaining);
+            remaining = 0;
+          }
+        } else {
+          principal = Math.max(0, principal - remaining);
+          remaining = 0;
+        }
+      };
+
+      for (const tx of txs) {
+        const txDate = parseDate(tx.date);
+        if (!txDate || txDate > today) continue;
+        if (txDate > lastDate) {
+          const days = daysBetween(lastDate, txDate);
+          if (obligation.kind === "credit" && obligation.apr > 0) {
+            interest += principal * (asNumber(obligation.apr) / 100) * (days / 365);
+          }
+          lastDate = txDate;
+        }
+        const amount = Math.max(0, asNumber(tx.amount));
+        paid += amount;
+        applyPayment(amount);
+      }
+
+      if (today > lastDate) {
+        const days = daysBetween(lastDate, today);
+        if (obligation.kind === "credit" && obligation.apr > 0) {
+          interest += principal * (asNumber(obligation.apr) / 100) * (days / 365);
+        }
+      }
+
+      const balance = Math.max(0, principal + interest);
+      const currentPayment = Math.max(0, asNumber(obligation.scheduledPayment || obligation.minPayment || 0));
+      const payoff = forecastObligation(obligation, { principal, interest }, MAX_FORECAST_MONTHS, 0);
+      const nextDue = nextDueDate(obligation, now);
+
+      return {
+        principal,
+        interest,
+        balance,
+        paid,
+        currentPayment,
+        monthsToPayoff: payoff.monthsToZero,
+        forecastInterest: payoff.totalInterest,
+        nextDue
+      };
+    }
+
+    function forecastObligation(obligation, base, months = MAX_FORECAST_MONTHS, extra = 0) {
+      let principal = Math.max(0, asNumber(base.principal));
+      let interest = Math.max(0, asNumber(base.interest));
+      let totalInterest = 0;
+      const balances = [Math.max(0, principal + interest)];
+
+      function applyPayment(amount) {
+        let remaining = Math.max(0, amount);
+        if (obligation.kind === "credit") {
+          if (interest > 0) {
+            const usedInterest = Math.min(interest, remaining);
+            interest -= usedInterest;
+            remaining -= usedInterest;
+          }
+          if (remaining > 0) {
+            principal = Math.max(0, principal - remaining);
+          }
+        } else {
+          principal = Math.max(0, principal - remaining);
+        }
+      }
+
+      if (extra > 0) applyPayment(extra);
+
+      let monthsToZero = balances[0] <= 0 ? 0 : null;
+      const monthlyPayment = Math.max(0, asNumber(obligation.scheduledPayment || obligation.minPayment || 0));
+
+      for (let month = 1; month <= months; month++) {
+        if (obligation.kind === "credit" && asNumber(obligation.apr) > 0) {
+          const monthInterest = principal * (asNumber(obligation.apr) / 100 / 12);
+          interest += monthInterest;
+          totalInterest += monthInterest;
+        }
+        if (monthlyPayment > 0) applyPayment(monthlyPayment);
+        const balance = Math.max(0, principal + interest);
+        balances.push(balance);
+        if (balance <= 0 && monthsToZero === null) monthsToZero = month;
+        if (balance <= 0) {
+          for (let rest = month + 1; rest <= months; rest++) balances.push(0);
+          break;
+        }
+      }
+
+      if (monthsToZero === null) monthsToZero = months;
+      return { balances, totalInterest, monthsToZero };
+    }
+
+    function nextDueDate(obligation, now = new Date()) {
+      const payment = Math.max(0, asNumber(obligation.scheduledPayment || obligation.minPayment || 0));
+      if (!payment) return null;
+      if (obligation.paymentDay) {
+        const day = clampDay(obligation.paymentDay);
+        if (!day) return null;
+        const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const thisMonthLast = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+        const safeThisMonthDay = Math.min(day, thisMonthLast);
+        const candidate = new Date(now.getFullYear(), now.getMonth(), safeThisMonthDay);
+        if (candidate < todayMidnight) {
+          const nextMonthLast = new Date(now.getFullYear(), now.getMonth() + 2, 0).getDate();
+          const safeNextMonthDay = Math.min(day, nextMonthLast);
+          return toISODate(new Date(now.getFullYear(), now.getMonth() + 1, safeNextMonthDay));
+        }
+        return toISODate(candidate);
+      }
+      return toISODate(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 30));
+    }
+
+    function computeDerivedState() {
+      const now = new Date();
+      const statuses = new Map();
+      state.obligations.forEach((ob) => statuses.set(ob.id, computeStatus(ob, now)));
+
+      const totals = {
+        balance: 0,
+        principal: 0,
+        interest: 0,
+        family: 0,
+        scheduled: 0,
+        paid: 0
+      };
+
+      for (const ob of state.obligations) {
+        const st = statuses.get(ob.id);
+        totals.balance += st.balance;
+        totals.principal += st.principal;
+        totals.interest += st.interest;
+        totals.paid += st.paid;
+        totals.scheduled += Math.max(0, asNumber(ob.scheduledPayment || ob.minPayment || 0));
+        if (ob.kind === "family") totals.family += st.balance;
+      }
+
+      const portfolioForecast = forecastPortfolio(state.obligations, statuses, MAX_FORECAST_MONTHS);
+      const recommendations = buildRecommendations(statuses);
+      const upcoming = buildUpcoming(statuses);
+
+      return { now, statuses, totals, portfolioForecast, recommendations, upcoming };
+    }
+
+    function forecastPortfolio(obligations, statuses, months = MAX_FORECAST_MONTHS) {
+      const series = Array.from({ length: months + 1 }, () => 0);
+      obligations.forEach((ob) => {
+        const st = statuses.get(ob.id);
+        const fc = forecastObligation(ob, { principal: st.principal, interest: st.interest }, months, 0);
+        fc.balances.forEach((value, idx) => {
+          series[idx] += value;
+        });
+      });
+      return series;
+    }
+
+    function buildRecommendations(statuses) {
+      const amount = Math.max(0, asNumber(state.ui.freeAmount));
+      const candidates = state.obligations
+        .filter((ob) => ob.active !== false)
+        .map((ob) => ({ ob, st: statuses.get(ob.id) }))
+        .filter(({ st }) => st && st.balance > 0);
+
+      if (!candidates.length) return { interest: null, payment: null, amount };
+
+      const scored = candidates.map(({ ob, st }) => {
+        const base = forecastObligation(ob, st, MAX_FORECAST_MONTHS, 0);
+        const withExtra = forecastObligation(ob, st, MAX_FORECAST_MONTHS, amount);
+        return {
+          ob,
+          st,
+          interestSavings: base.totalInterest - withExtra.totalInterest,
+          monthsSaved: Math.max(0, base.monthsToZero - withExtra.monthsToZero),
+          balance: st.balance,
+          apr: asNumber(ob.apr),
+          payment: Math.max(0, asNumber(ob.scheduledPayment || ob.minPayment || 0))
+        };
+      });
+
+      const interestBest = scored
+        .slice()
+        .sort((a, b) => b.interestSavings - a.interestSavings || b.apr - a.apr || a.balance - b.balance)[0];
+
+      const paymentBest = scored
+        .slice()
+        .sort((a, b) => b.monthsSaved - a.monthsSaved || a.balance - b.balance || b.payment - a.payment)[0];
+
+      return {
+        amount,
+        interest: interestBest,
+        payment: paymentBest
+      };
+    }
+
+    function buildUpcoming(statuses) {
+      const items = state.obligations
+        .map((ob) => ({ ob, st: statuses.get(ob.id) }))
+        .filter(({ st, ob }) => st && st.balance > 0 && (ob.scheduledPayment > 0 || ob.minPayment > 0))
+        .map(({ ob, st }) => {
+          const due = nextDueDate(ob);
+          return {
+            id: ob.id,
+            title: ob.name,
+            kind: ob.kind,
+            date: due,
+            amount: st.currentPayment,
+            lender: ob.lender || ""
+          };
+        })
+        .filter((x) => x.date)
+        .sort((a, b) => String(a.date).localeCompare(String(b.date)));
+      return items;
+    }
+
+    function recommendationLabel(rec, mode) {
+      if (!rec) return "Нет активных обязательств";
+      if (mode === "payment") {
+        return `${money(rec.amount)} → ${rec.ob.name}`;
+      }
+      return `${money(rec.amount)} → ${rec.ob.name}`;
+    }
+
+    function renderSummary() {
+      const t = derived.totals;
+      const creditCount = state.obligations.filter((o) => o.kind === "credit").length;
+      const familyCount = state.obligations.filter((o) => o.kind === "family").length;
+      const activeCount = state.obligations.filter((o) => (derived.statuses.get(o.id)?.balance || 0) > 0).length;
+
+      els.summaryGrid.innerHTML = `
+        <div class="metric blue">
+          <div class="label">Общий остаток</div>
+          <div class="value">${money(t.balance)}</div>
+          <div class="sub">Кредиты + займы родственникам</div>
+        </div>
+        <div class="metric green">
+          <div class="label">Остаток тела</div>
+          <div class="value">${money(t.principal)}</div>
+          <div class="sub">Без начисленных процентов</div>
+        </div>
+        <div class="metric amber">
+          <div class="label">Начисленные проценты</div>
+          <div class="value">${money(t.interest)}</div>
+          <div class="sub">На текущую дату</div>
+        </div>
+        <div class="metric red">
+          <div class="label">Регулярные платежи в месяц</div>
+          <div class="value">${money(t.scheduled)}</div>
+          <div class="sub">По всем активным обязательствам</div>
+        </div>
+        <div class="metric">
+          <div class="label">Активных записей</div>
+          <div class="value">${activeCount}</div>
+          <div class="sub">Кредитов: ${creditCount} · Родственникам: ${familyCount}</div>
+        </div>
+      `;
+    }
+
+    function renderObligationCards(kind) {
+      const container = kind === "credit" ? els.creditList : els.familyList;
+      const items = state.obligations.filter((o) => o.kind === kind);
+
+      if (!items.length) {
+        container.innerHTML = `<div class="empty">Пока нет записей. Добавьте первую карточку ниже.</div>`;
+        return;
+      }
+
+      container.innerHTML = items.map((ob) => {
+        const st = derived.statuses.get(ob.id) || { principal: 0, interest: 0, balance: 0, paid: 0, monthsToPayoff: 0, currentPayment: 0, nextDue: null };
+        const progress = ob.initialPrincipal > 0 ? Math.max(0, Math.min(100, ((ob.initialPrincipal - st.balance) / ob.initialPrincipal) * 100)) : 0;
+        const payoffText = st.balance <= 0 ? "Закрыт" : `${st.monthsToPayoff || MAX_FORECAST_MONTHS} мес.`;
+        return `
+          <div class="ob-card ${ob.kind}">
+            <div class="ob-top">
+              <div>
+                <span class="badge ${ob.kind}">${ob.kind === "credit" ? "Кредит" : "Займ родственнику"}</span>
+                <div class="ob-title">${esc(ob.name || (ob.kind === "credit" ? "Кредит" : "Займ"))}</div>
+                <div class="ob-meta">${esc(ob.lender || "Без банка / без указания")}</div>
+              </div>
+              <div class="balance-box">
+                <div class="label">Остаток сейчас</div>
+                <div class="value">${money(st.balance)}</div>
+              </div>
+            </div>
+
+            <div class="progress"><div style="width:${progress}%"></div></div>
+
+            <div class="stats-row">
+              <div class="stat"><div class="k">Тело</div><div class="v">${money(st.principal)}</div></div>
+              <div class="stat"><div class="k">Проценты</div><div class="v">${money(st.interest)}</div></div>
+              <div class="stat"><div class="k">Выплачено</div><div class="v">${money(st.paid)}</div></div>
+              <div class="stat"><div class="k">Погашение</div><div class="v">${payoffText}</div></div>
+            </div>
+
+            <div class="edit-grid four">
+              <div class="field">
+                <label>Тип</label>
+                <select id="kind-${ob.id}">
+                  <option value="credit" ${ob.kind === "credit" ? "selected" : ""}>Кредит</option>
+                  <option value="family" ${ob.kind === "family" ? "selected" : ""}>Займ родственнику</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Название</label>
+                <input id="name-${ob.id}" value="${esc(ob.name)}" />
+              </div>
+              <div class="field">
+                <label>Банк / человек</label>
+                <input id="lender-${ob.id}" value="${esc(ob.lender)}" />
+              </div>
+              <div class="field">
+                <label>Дата начала</label>
+                <input id="start-${ob.id}" type="date" value="${esc(ob.startDate)}" />
+              </div>
+              <div class="field">
+                <label>Сумма</label>
+                <input id="principal-${ob.id}" type="number" step="0.01" value="${ob.initialPrincipal}" />
+              </div>
+              <div class="field">
+                <label>Ставка, %</label>
+                <input id="apr-${ob.id}" type="number" step="0.01" value="${ob.apr}" />
+              </div>
+              <div class="field">
+                <label>Мин. платёж</label>
+                <input id="min-${ob.id}" type="number" step="0.01" value="${ob.minPayment}" />
+              </div>
+              <div class="field">
+                <label>Плановый платёж</label>
+                <input id="scheduled-${ob.id}" type="number" step="0.01" value="${ob.scheduledPayment}" />
+              </div>
+              <div class="field">
+                <label>День месяца</label>
+                <input id="day-${ob.id}" type="number" min="1" max="31" value="${ob.paymentDay || ""}" />
+              </div>
+              <div class="field" style="grid-column: span 3;">
+                <label>Примечание</label>
+                <input id="notes-${ob.id}" value="${esc(ob.notes)}" />
+              </div>
+            </div>
+
+            <div class="card-actions">
+              <button class="primary" type="button" onclick="saveObligation('${ob.id}')">Сохранить</button>
+              <button class="ghost" type="button" onclick="fillExtraFrom('${ob.id}')">Внести свободную сумму сюда</button>
+              <button class="danger" type="button" onclick="deleteObligation('${ob.id}')">Удалить</button>
+              <span class="small-note">Следующий платёж: ${st.nextDue ? `${st.nextDue} · ${money(st.currentPayment)}` : "не задан"}</span>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderTransactions() {
+      const txs = state.transactions.slice().sort((a, b) => b.date.localeCompare(a.date));
+      if (!txs.length) {
+        els.txList.innerHTML = `<div class="empty">Платежей пока нет. Добавьте прошлые и будущие операции через форму выше.</div>`;
+        return;
+      }
+      els.txList.innerHTML = txs.map((tx) => {
+        const ob = state.obligations.find((x) => x.id === tx.obligationId);
+        const label = tx.kind === "extra" ? "Досрочка" : tx.kind === "repayment" ? "Возврат" : "Платёж";
+        return `
+          <div class="tx-item">
+            <div class="left">
+              <div class="title">${label} · ${esc(ob ? ob.name : "Удалённое обязательство")}</div>
+              <div class="meta">${esc(tx.date)} · ${esc(tx.note || "Без комментария")}</div>
+            </div>
+            <div class="right" style="text-align:right;">
+              <div class="sum">${money(tx.amount)}</div>
+              <button class="ghost" type="button" style="margin-top:8px;" onclick="deleteTransaction('${tx.id}')">Удалить</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderRecommendations() {
+      const rec = derived.recommendations;
+      const mode = state.ui.optimizeMode;
+      const amount = rec.amount;
+      if (!amount || amount <= 0) {
+        els.recommendations.innerHTML = `<div class="empty">Введите свободную сумму, и система предложит лучший сценарий её использования.</div>`;
+        return;
+      }
+
+      const interest = rec.interest;
+      const payment = rec.payment;
+      const active = mode === "payment" ? payment : interest;
+      const activeClass = active && active.ob.kind === "family" ? "family" : "";
+      const currentLabel = mode === "payment" ? "Для снижения обязательного платежа" : "Для снижения переплаты";
+      const actionText = active ? `${money(amount)} → ${active.ob.name}` : "—";
+
+      els.recommendations.innerHTML = `
+        <div class="recommend-card ${activeClass}">
+          <div class="row">
+            <div>
+              <span class="badge ${active ? active.ob.kind : "credit"}">${currentLabel}</span>
+              <h3>${active ? esc(active.ob.name) : "Нет подходящих обязательств"}</h3>
+              <div class="meta">${active ? `Остаток: ${money(active.balance)} · Ставка: ${active.apr.toFixed(2)}% · Плановый платёж: ${money(active.payment)}` : "Пока нет активных долгов для анализа."}</div>
+              <div class="meta" style="margin-top:6px;">Лучший сценарий: ${actionText}</div>
+              <div class="meta" style="margin-top:6px;">Оценка через 24 месяца: ${active ? (mode === "interest" ? `экономия процентов около ${money(active.interestSavings)}` : `ускорение закрытия примерно на ${active.monthsSaved} мес.`) : "—"}</div>
+            </div>
+            <div style="text-align:right; min-width: 180px;">
+              <div class="small-note">Режим</div>
+              <div style="font-size:24px;font-weight:900;">${mode === "interest" ? "Переплата" : "Платёж"}</div>
+              <div class="small-note" style="margin-top:6px;">Свободная сумма: ${money(amount)}</div>
+            </div>
+          </div>
+          <div class="card-actions" style="margin-top:12px;">
+            <button class="primary" type="button" onclick="applyRecommendedExtra()">Записать досрочный платёж</button>
+            <button class="ghost" type="button" onclick="toggleOptimizeMode()">Переключить режим</button>
+          </div>
+        </div>
+
+        <div class="recommend-card ${payment && payment.ob.kind === "family" ? "family" : ""}">
+          <div class="row">
+            <div>
+              <span class="badge ${payment ? payment.ob.kind : "family"}">Второй сценарий</span>
+              <h3>${payment ? esc(payment.ob.name) : "Нет второго сценария"}</h3>
+              <div class="meta">${payment ? `Показывает, куда лучше направить сумму, если цель — быстрее разгрузить ежемесячные обязательства.` : ""}</div>
+            </div>
+            <div style="text-align:right; min-width: 180px;">
+              <div class="small-note">Альтернатива</div>
+              <div style="font-size:20px;font-weight:900;">${payment ? money(payment.balance) : "—"}</div>
+              <div class="small-note" style="margin-top:6px;">Остаток сейчас</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderUpcoming() {
+      if (!derived.upcoming.length) {
+        els.upcomingList.innerHTML = `<div class="empty">Пока нет будущих дат платежей. Укажите день месяца и плановый платёж в карточке.</div>`;
+        return;
+      }
+      els.upcomingList.innerHTML = derived.upcoming.slice(0, 8).map((item) => `
+        <div class="tx-item">
+          <div class="left">
+            <div class="title">${esc(item.title)}</div>
+            <div class="meta">${esc(item.date)}${item.lender ? ` · ${esc(item.lender)}` : ""}</div>
+          </div>
+          <div class="sum">${money(item.amount)}</div>
+        </div>
+      `).join("");
+    }
+
+    function renderCharts() {
+      const labels = Array.from({ length: MAX_FORECAST_MONTHS + 1 }, (_, i) => i === 0 ? "Сейчас" : `${i} мес.`);
+      const totalSeries = derived.portfolioForecast;
+      const balanceCtx = document.getElementById("balanceChart");
+      const breakdownCtx = document.getElementById("breakdownChart");
+
+      if (!charts.balance) {
+        charts.balance = new Chart(balanceCtx, {
+          type: "line",
+          data: {
+            labels,
+            datasets: [{
+              label: "Остаток долга",
+              data: totalSeries,
+              tension: .35,
+              fill: true,
+              borderWidth: 3,
+              pointRadius: 2
+            }]
+          },
+          options: chartOptions()
+        });
+      } else {
+        charts.balance.data.labels = labels;
+        charts.balance.data.datasets[0].data = totalSeries;
+        charts.balance.update();
+      }
+
+      const principal = Math.max(0, derived.totals.principal);
+      const interest = Math.max(0, derived.totals.interest);
+      const family = Math.max(0, derived.totals.family);
+
+      if (!charts.breakdown) {
+        charts.breakdown = new Chart(breakdownCtx, {
+          type: "doughnut",
+          data: {
+            labels: ["Тело кредитов", "Начисленные проценты", "Долги родственникам"],
+            datasets: [{
+              data: [principal, interest, family],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: "bottom", labels: { usePointStyle: true, boxWidth: 10, padding: 18 } }
+            },
+            cutout: "62%"
+          }
+        });
+      } else {
+        charts.breakdown.data.datasets[0].data = [principal, interest, family];
+        charts.breakdown.update();
+      }
+    }
+
+    function chartOptions() {
+      return {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: (v) => money(v).replace(/\,00\s?₽/, " ₽")
+            },
+            grid: { color: "rgba(21,32,51,.08)" }
+          },
+          x: { grid: { display: false } }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => ` ${money(ctx.parsed.y)}`
+            }
+          }
+        }
+      };
+    }
+
+    function renderObligationSelectors() {
+      const options = state.obligations.length
+        ? state.obligations.map((ob) => `<option value="${ob.id}">${esc(ob.name)} (${ob.kind === "credit" ? "кредит" : "родственник"})</option>`).join("")
+        : `<option value="">Сначала добавьте обязательство</option>`;
+      els.newTxObligation.innerHTML = options;
+    }
+
+    function renderAll() {
+      derived = computeDerivedState();
+      renderObligationSelectors();
+      renderSummary();
+      renderObligationCards("credit");
+      renderObligationCards("family");
+      renderTransactions();
+      renderRecommendations();
+      renderUpcoming();
+      renderCharts();
+      setUpdatedPill();
+      setSyncState(hasRemote ? "Синхронизировано" : "Локальный режим", hasRemote ? "green" : "amber");
+    }
+
+    function addObligation(kind) {
+      const prefix = kind === "credit" ? "newCredit" : "newFamily";
+      const item = {
+        id: uid(),
+        kind,
+        name: emptyStringToNull(document.getElementById(`${prefix}Name`).value) || (kind === "credit" ? "Новый кредит" : "Новый займ"),
+        lender: emptyStringToNull(document.getElementById(`${prefix}Lender`).value) || "",
+        startDate: document.getElementById(`${prefix}Start`).value || todayISO(),
+        initialPrincipal: asNumber(document.getElementById(`${prefix}Principal`).value),
+        apr: kind === "credit" ? asNumber(document.getElementById("newCreditApr").value) : 0,
+        minPayment: kind === "credit" ? asNumber(document.getElementById("newCreditMinPayment").value) : 0,
+        scheduledPayment: kind === "credit" ? asNumber(document.getElementById("newCreditScheduled").value) || asNumber(document.getElementById("newCreditMinPayment").value) : asNumber(document.getElementById("newFamilyScheduled").value),
+        paymentDay: kind === "credit" ? clampDay(document.getElementById("newCreditDay").value) : clampDay(document.getElementById("newFamilyDay").value),
+        notes: emptyStringToNull(document.getElementById(`${prefix}Notes`).value) || "",
+        active: true
+      };
+      if (!item.initialPrincipal && kind === "credit") {
+        setNotice("Для кредита нужно указать сумму.", "warn");
+        return;
+      }
+      if (!item.initialPrincipal && kind === "family") {
+        setNotice("Для займа родственнику нужно указать сумму.", "warn");
+        return;
+      }
+      state.obligations.unshift(item);
+      saveState();
+      renderAll();
+      setNotice(kind === "credit" ? "Кредит добавлен." : "Займ родственнику добавлен.", "good");
+    }
+
+    function saveObligation(id) {
+      const idx = state.obligations.findIndex((x) => x.id === id);
+      if (idx < 0) return;
+      const prev = state.obligations[idx];
+      const nextKind = document.getElementById(`kind-${id}`).value === "family" ? "family" : "credit";
+      const next = {
+        ...prev,
+        kind: nextKind,
+        name: emptyStringToNull(document.getElementById(`name-${id}`).value) || prev.name,
+        lender: emptyStringToNull(document.getElementById(`lender-${id}`).value) || "",
+        startDate: document.getElementById(`start-${id}`).value || todayISO(),
+        initialPrincipal: asNumber(document.getElementById(`principal-${id}`).value),
+        apr: nextKind === "credit" ? asNumber(document.getElementById(`apr-${id}`).value) : 0,
+        minPayment: asNumber(document.getElementById(`min-${id}`).value),
+        scheduledPayment: asNumber(document.getElementById(`scheduled-${id}`).value),
+        paymentDay: clampDay(document.getElementById(`day-${id}`).value),
+        notes: emptyStringToNull(document.getElementById(`notes-${id}`).value) || "",
+        active: true
+      };
+      state.obligations[idx] = normalizeObligation(next);
+      saveState();
+      renderAll();
+      setNotice("Карточка сохранена.", "good");
+    }
+
+    function deleteObligation(id) {
+      const ob = state.obligations.find((x) => x.id === id);
+      if (!ob) return;
+      if (!confirm(`Удалить запись «${ob.name}» и все связанные платежи?`)) return;
+      state.obligations = state.obligations.filter((x) => x.id !== id);
+      state.transactions = state.transactions.filter((tx) => tx.obligationId !== id);
+      saveState();
+      renderAll();
+      setNotice("Запись удалена.", "good");
+    }
+
+    function addTransaction(kindOverride = null, obligationOverride = null, amountOverride = null) {
+      const obligationId = obligationOverride || els.newTxObligation.value;
+      if (!obligationId) {
+        setNotice("Сначала выберите обязательство для платежа.", "warn");
+        return;
+      }
+      const amount = amountOverride != null ? asNumber(amountOverride) : asNumber(document.getElementById("newTxAmount").value);
+      if (!amount || amount <= 0) {
+        setNotice("Введите сумму платежа.", "warn");
+        return;
+      }
+      const tx = {
+        id: uid(),
+        obligationId,
+        date: els.newTxDate.value || todayISO(),
+        amount,
+        kind: kindOverride || document.getElementById("newTxKind").value,
+        note: emptyStringToNull(document.getElementById("newTxNote").value) || ""
+      };
+      state.transactions.unshift(tx);
+      saveState();
+      renderAll();
+      document.getElementById("newTxAmount").value = "";
+      document.getElementById("newTxNote").value = "";
+      setNotice("Платёж добавлен и учтён в расчётах.", "good");
+    }
+
+    function deleteTransaction(id) {
+      state.transactions = state.transactions.filter((tx) => tx.id !== id);
+      saveState();
+      renderAll();
+      setNotice("Запись платежа удалена.", "good");
+    }
+
+    function applyRecommendedExtra() {
+      const rec = derived.recommendations;
+      const mode = state.ui.optimizeMode;
+      const candidate = mode === "payment" ? rec.payment : rec.interest;
+      if (!candidate) {
+        setNotice("Нечего применять: нет активных обязательств.", "warn");
+        return;
+      }
+      els.newTxKind.value = candidate.ob.kind === "family" ? "repayment" : "extra";
+      els.newTxObligation.value = candidate.ob.id;
+      els.newTxDate.value = todayISO();
+      document.getElementById("newTxAmount").value = state.ui.freeAmount || 0;
+      document.getElementById("newTxNote").value = mode === "payment" ? "Свободная сумма для снижения обязательного платежа" : "Свободная сумма для снижения переплаты";
+      addTransaction(candidate.ob.kind === "family" ? "repayment" : (mode === "interest" ? "extra" : "payment"));
+    }
+
+    function fillExtraFrom(id) {
+      const ob = state.obligations.find((x) => x.id === id);
+      if (!ob) return;
+      els.newTxObligation.value = id;
+      els.newTxDate.value = todayISO();
+      document.getElementById("newTxAmount").value = state.ui.freeAmount || 0;
+      document.getElementById("newTxKind").value = ob.kind === "family" ? "repayment" : "extra";
+      document.getElementById("newTxNote").value = `Досрочный платёж по ${ob.name}`;
+      setNotice(`Заполнена форма досрочного платежа для «${ob.name}».`, "good");
+      window.scrollTo({ top: document.getElementById("txForm").getBoundingClientRect().top + window.scrollY - 12, behavior: "smooth" });
+    }
+
+    function toggleOptimizeMode() {
+      state.ui.optimizeMode = state.ui.optimizeMode === "interest" ? "payment" : "interest";
+      document.getElementById("optimizeMode").value = state.ui.optimizeMode;
+      saveState();
+      renderAll();
+    }
+
+    function exportJSON() {
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "credit-tracker-backup.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importJSON() {
+      const raw = prompt("Вставьте JSON резервной копии, экспортированный этим сайтом.");
+      if (!raw) return;
+      try {
+        const parsed = JSON.parse(raw);
+        state = normalizeState(parsed);
+        saveState();
+        renderAll();
+        setNotice("Резервная копия загружена.", "good");
+      } catch (error) {
+        alert("Не удалось прочитать JSON.");
+      }
+    }
+
+    function resetAll() {
+      if (!confirm("Удалить все данные из этого общего документа? Это действие повлияет на вас и брата.")) return;
+      state = stateTemplate();
+      saveState();
+      renderAll();
+      setNotice("Все данные очищены.", "warn");
+    }
+
+    function bindStaticControls() {
+      els.newCreditStart.value = todayISO();
+      els.newFamilyStart.value = todayISO();
+      els.newTxDate.value = todayISO();
+      els.freeAmount.value = state.ui.freeAmount;
+      els.optimizeMode.value = state.ui.optimizeMode;
+
+      document.getElementById("addCreditBtn").addEventListener("click", () => addObligation("credit"));
+      document.getElementById("addFamilyBtn").addEventListener("click", () => addObligation("family"));
+      document.getElementById("addTxBtn").addEventListener("click", () => addTransaction());
+      document.getElementById("applyFreeBtn").addEventListener("click", () => applyRecommendedExtra());
+      document.getElementById("exportBtn").addEventListener("click", exportJSON);
+      document.getElementById("importBtn").addEventListener("click", importJSON);
+      document.getElementById("resetBtn").addEventListener("click", resetAll);
+      els.freeAmount.addEventListener("input", () => {
+        state.ui.freeAmount = asNumber(els.freeAmount.value);
+        saveState();
+        renderAll();
+      });
+      els.optimizeMode.addEventListener("change", () => {
+        state.ui.optimizeMode = els.optimizeMode.value === "payment" ? "payment" : "interest";
+        saveState();
+        renderAll();
+      });
+      els.newTxKind.addEventListener("change", () => {
+        if (els.newTxKind.value === "repayment") {
+          setNotice("Вы выбрали возврат родственнику. Подставьте нужную карточку и сумму.", "good");
+        }
+      });
+    }
+
+    async function initFirebase() {
+      try {
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.firestore();
+        setSyncState("Подключение Firebase…", "amber");
+        const docRef = db.collection(FIRESTORE_PATH.collection).doc(FIRESTORE_PATH.doc);
+
+        const snapshot = await docRef.get();
+        if (snapshot.exists) {
+          state = normalizeState(snapshot.data());
+          hasRemote = true;
+          localSave();
+          setSyncState("Синхронизировано", "green");
+          setNotice("Загружена общая версия данных из Firebase.", "good");
+        } else {
+          hasRemote = true;
+          setSyncState("Пустой общий документ", "amber");
+          setNotice("Firestore готов. Добавьте первые записи — они сохранятся в общий документ.", "warn");
+          await docRef.set({ ...state, serverUpdatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+        }
+
+        docRef.onSnapshot((snapshot) => {
+          if (!snapshot.exists) return;
+          const remote = normalizeState(snapshot.data());
+          isApplyingRemote = true;
+          state = remote;
+          localSave();
+          renderAll();
+          isApplyingRemote = false;
+          hasRemote = true;
+          setSyncState("Синхронизировано", "green");
+          setNotice("Данные обновлены из общего документа Firebase.", "good");
+        }, (error) => {
+          console.error(error);
+          setSyncState("Ошибка Firebase", "amber");
+          setNotice("Подписка на Firebase не работает. Проверьте правила Firestore и доступ к документу.", "warn");
+        });
+      } catch (error) {
+        console.error(error);
+        setSyncState("Локальный режим", "amber");
+        setNotice("Firebase не подключился. Сайт продолжит работать локально в этом браузере.", "warn");
+      }
+    }
+
+    function attachGlobals() {
+      window.saveObligation = saveObligation;
+      window.deleteObligation = deleteObligation;
+      window.deleteTransaction = deleteTransaction;
+      window.applyRecommendedExtra = applyRecommendedExtra;
+      window.toggleOptimizeMode = toggleOptimizeMode;
+      window.fillExtraFrom = fillExtraFrom;
+    }
+
+    function seedFromLocalIfNeeded() {
+      if (!state.obligations.length && !state.transactions.length) {
+        state.ui.freeAmount = 5000;
+        state.ui.optimizeMode = "interest";
+      }
+    }
+
+    async function boot() {
+      loadLocalBackup();
+      seedFromLocalIfNeeded();
+      bindStaticControls();
+      attachGlobals();
+      renderAll();
+      await initFirebase();
+      renderAll();
+    }
+
+    boot();
+  </script>
 </body>
 </html>
