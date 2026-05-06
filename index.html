@@ -1456,12 +1456,15 @@
         saveState();
         renderAll();
       });
-      els.newTxKind.addEventListener("change", () => {
-        if (els.newTxKind.value === "repayment") {
-          setNotice("Вы выбрали возврат родственнику. Подставьте нужную карточку и сумму.", "good");
-        }
+      const newTxKindEl = document.getElementById("newTxKind");
+
+      if (newTxKindEl) {
+      newTxKindEl.addEventListener("change", () => {
+      if (newTxKindEl.value === "repayment") {
+      setNotice("Вы выбрали возврат родственнику. Подставьте нужную карточку и сумму.", "good");
+      }
       });
-    }
+      }
 
     async function initFirebase() {
       try {
