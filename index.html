@@ -1484,21 +1484,39 @@
         }
 
         docRef.onSnapshot((snapshot) => {
-          if (!snapshot.exists) return;
-          const remote = normalizeState(snapshot.data());
-          isApplyingRemote = true;
-          state = remote;
-          localSave();
-          renderAll();
-          isApplyingRemote = false;
-          hasRemote = true;
-          setSyncState("Синхронизировано", "green");
-          setNotice("Данные обновлены из общего документа Firebase.", "good");
-        }, (error) => {
-          console.error(error);
-          setSyncState("Ошибка Firebase", "amber");
-          setNotice("Подписка на Firebase не работает. Проверьте правила Firestore и доступ к документу.", "warn");
-        });
+  try {
+    if (!snapshot.exists) {
+      hasRemote = true;
+      setSyncState("Firebase подключен", "green");
+      return;
+    }
+
+    const data = snapshot.data();
+
+    if (!data || typeof data !== "object") {
+      setSyncState("Пустая база", "amber");
+      return;
+    }
+
+    const remote = normalizeState(data);
+
+    isApplyingRemote = true;
+    state = remote;
+
+    localSave();
+    renderAll();
+
+    isApplyingRemote = false;
+    hasRemote = true;
+
+    setSyncState("Синхронизировано", "green");
+    setNotice("Данные успешно синхронизированы.", "good");
+
+  } catch (e) {
+    console.error(e);
+    setSyncState("Ошибка синхронизации", "amber");
+  }
+});
       } catch (error) {
         console.error(error);
         setSyncState("Локальный режим", "amber");
