@@ -1089,6 +1089,32 @@ function renderRefi(){
   els.refiMonthlyFee.value=state.ui.refi.monthlyFee||0;
 }
 
+function chartLineOptions(){
+  return {
+    responsive:true,
+    maintainAspectRatio:false,
+    scales:{
+      y:{beginAtZero:true,grid:{color:"rgba(18,32,51,.08)"},ticks:{callback:v=>fmtMoney(v)}},
+      x:{grid:{display:false}}
+    },
+    plugins:{
+      legend:{display:false},
+      tooltip:{callbacks:{label:ctx=>` ${fmtMoney(ctx.parsed.y)}`}}
+    }
+  };
+}
+
+function chartDoughnutOptions(){
+  return {
+    responsive:true,
+    maintainAspectRatio:false,
+    cutout:"62%",
+    plugins:{
+      legend:{position:"bottom",labels:{usePointStyle:true,boxWidth:10,padding:18}}
+    }
+  };
+}
+
 function renderCharts(){
   const pack=derived.seriesPack;
   if(!charts.forecast){
