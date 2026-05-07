@@ -700,12 +700,42 @@
         series.push(totalBalanceAt(monthEnd(dt)));
       }
       const currentLedgers = new Map();
-      state.obligations.forEach(ob    const withExtra = simulateFuture(ob, ledger, ob.termMonths || MAX_FORECAST_MONTHS, amount, ob.prepayMode);
-        return { ob, ledger, interestSavings: base.totalInterest - withExtra.totalInterest, monthsSaved: Math.max(0, base.monthsToZero - withExtra.monthsToZero), balance: ledger.balance, apr: num(ob.apr), payment: ledger.currentPayment };
-      });
-      const interest = scored.slice().sort((a, b) => b.interestSavings - a.interestSavings || b.apr - a.apr || a.balance - b.balance)[0];
-      const payment = scored.slice().sort((a, b) => b.monthsSaved - a.monthsSaved || a.balance - b.balance || b.payment - a.payment)[0];
-      return { amount, interest, payment };
+
+state.obligations.forEach(ob => {
+  const ledger = calculateLedger(ob);
+  currentLedgers.set(ob.id, ledger);
+});
+
+for (let m = 1; m <= 24; m++) {
+  const dt = addMonths(currentMonth, m);
+  labels.push(`+${m}м`);
+
+  let balance = 0;
+
+  state.obligations.forEach(ob => {
+    const ledger = currentLedgers.get(ob.id);
+    if (!ledger) return;
+
+    const monthlyRate = num(ob.apr) / 100 / 12;
+    const payment = ledger.currentPayment || 0;
+
+    let simulatedBalance = ledger.balance;
+
+    for (let i = 0; i < m; i++) {
+      const interest = simulatedBalance * monthlyRate;
+      simulatedBalance = Math.max(
+        0,
+        simulatedBalance + interest - payment
+      );
+    }
+
+    balance += simulatedBalance;
+  });
+
+  series.push(balance);
+}
+
+return { labels, series };
     }
 
     function buildUpcoming(ledgers) {
