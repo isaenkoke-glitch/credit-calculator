@@ -687,56 +687,81 @@
     }
 
     function buildDebtSeries() {
-      const now = new Date();
-      const firstStart = state.obligations.length ? state.obligations.map(o => parseDate(o.startDate) || now).reduce((a, b) => a < b ? a : b) : now;
-      const startMonth = monthStart(firstStart);
-      const currentMonth = monthStart(now);
-      const historyMonths = monthsBetween(startMonth, currentMonth);
-      const labels = [];
-      const series = [];
-      for (let i = 0; i <= historyMonths; i++) {
-        const dt = addMonths(startMonth, i);
-        labels.push(dt.toLocaleDateString("ru-RU", { month: "short", year: "numeric" }));
-        series.push(totalBalanceAt(monthEnd(dt)));
-      }
-      const currentLedgers = new Map();
+  const now = new Date();
 
-state.obligations.forEach(ob => {
-  const ledger = calculateLedger(ob);
-  currentLedgers.set(ob.id, ledger);
-});
+  const firstStart = state.obligations.length
+    ? state.obligations
+        .map(o => parseDate(o.startDate) || now)
+        .reduce((a, b) => (a < b ? a : b))
+    : now;
 
-for (let m = 1; m <= 24; m++) {
-  const dt = addMonths(currentMonth, m);
-  labels.push(`+${m}м`);
+  const startMonth = monthStart(firstStart);
+  const currentMonth = monthStart(now);
 
-  let balance = 0;
+  const historyMonths = monthsBetween(startMonth, currentMonth);
+
+  const labels = [];
+  const series = [];
+
+  for (let i = 0; i <= historyMonths; i++) {
+    const dt = addMonths(startMonth, i);
+
+    labels.push(
+      dt.toLocaleDateString("ru-RU", {
+        month: "short",
+        year: "numeric"
+      })
+    );
+
+    series.push(totalBalanceAt(monthEnd(dt)));
+  }
+
+  const currentLedgers = new Map();
 
   state.obligations.forEach(ob => {
-    const ledger = currentLedgers.get(ob.id);
-    if (!ledger) return;
-
-    const monthlyRate = num(ob.apr) / 100 / 12;
-    const payment = ledger.currentPayment || 0;
-
-    let simulatedBalance = ledger.balance;
-
-    for (let i = 0; i < m; i++) {
-      const interest = simulatedBalance * monthlyRate;
-      simulatedBalance = Math.max(
-        0,
-        simulatedBalance + interest - payment
-      );
-    }
-
-    balance += simulatedBalance;
+    const ledger = calculateLedger(ob);
+    currentLedgers.set(ob.id, ledger);
   });
 
-  series.push(balance);
-}
+  for (let m = 1; m <= 24; m++) {
+    const dt = addMonths(currentMonth, m);
 
-return { labels, series };
-    }
+    labels.push(`+${m}м`);
+
+    let balance = 0;
+
+    state.obligations.forEach(ob => {
+      const ledger = currentLedgers.get(ob.id);
+
+      if (!ledger) {
+        return;
+      }
+
+      const monthlyRate = num(ob.apr) / 100 / 12;
+      const payment = ledger.currentPayment || 0;
+
+      let simulatedBalance = ledger.balance;
+
+      for (let i = 0; i < m; i++) {
+        const interest = simulatedBalance * monthlyRate;
+
+        simulatedBalance = Math.max(
+          0,
+          simulatedBalance + interest - payment
+        );
+      }
+
+      balance += simulatedBalance;
+    });
+
+    series.push(balance);
+  }
+
+  return {
+    labels,
+    series
+  };
+}
 
     function buildUpcoming(ledgers) {
       return state.obligations.map(ob => ({ ob, ledger: ledgers.get(ob.id) })).filter(({ ob, ledger }) => ledger && ledger.balance > 0 && (ob.scheduledPayment > 0 || ob.minPayment > 0)).map(({ ob, ledger }) => ({ id: ob.id, title: ob.name, lender: ob.lender || "", kind: ob.kind, date: ledger.nextDue, amount: ledger.currentPayment })).filter(x => x.date).sort((a, b) => String(a.date).localeCompare(String(b.date)));
