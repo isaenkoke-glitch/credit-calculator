@@ -983,7 +983,7 @@
       <div class="section-head">
         <div>
           <h2>Прогноз свободных денег</h2>
-          <div class="subtitle">История от первого кредита и прогноз на 24 месяца вперёд.</div>
+          чный денежный поток.</div>
         </div>
       </div>
       <canvas id="forecastChart"></canvas>
@@ -1015,10 +1015,7 @@
       <div class="section-head">
         <div>
           <h2>Проверка рефинансирования</h2>
-          <div class="subtitle">Сравнивает текущий остаток долга с новым кредитом и показывает критическую ставку.</div>
-        </div>
-      </div>
-      <div class="refi-grid">
+          <div class="subtitle">Сравнивает будущие платежи по текущему кредиту с вариантом рефиrefi-grid">
         <div class="field"><label>Кредит</label><select id="refiObligation"></select></div>
         <div class="field"><label>Новая сумма</label><input id="refiAmount" type="number" step="0.01" placeholder="0" /></div>
         <div class="field"><label>Новая ставка, %</label><input id="refiApr" type="number" step="0.01" placeholder="0" /></div>
@@ -1414,17 +1411,27 @@
         let iPart = 0;
         let pPart = 0;
 
-        if (ob.kind === "credit") {
-          iPart = Math.min(interest, remaining);
+        if (tx.manual && tx.parts) {
+          iPart = Math.max(0, Math.min(num(tx.parts.interest), interest, amount));
+          pPart = Math.max(0, Math.min(num(tx.parts.principal), principal, amount - iPart));
+
           interest -= iPart;
-          remaining -= iPart;
-          pPart = Math.min(principal, remaining);
           principal -= pPart;
-          remaining -= pPart;
+          remaining -= (iPart + pPart);
         } else {
-          pPart = Math.min(principal, remaining);
-          principal -= pPart;
-          remaining -= pPart;
+          if (ob.kind === "credit") {
+            iPart = Math.min(interest, remaining);
+            interest -= iPart;
+            remaining -= iPart;
+
+            pPart = Math.min(principal, remaining);
+            principal -= pPart;
+            remaining -= pPart;
+          } else {
+            pPart = Math.min(principal, remaining);
+            principal -= pPart;
+            remaining -= pPart;
+          }
         }
 
         interestPaid += iPart;
@@ -1528,87 +1535,42 @@
 
     function buildPortfolioSeries() {
       const now = new Date();
-      const currentMonth = monthStart(now);
-      const firstStart = state.obligations.length
-        ? state.obligations.map(o => parseDate(o.startDate) || now).reduce((a, b) => a < b ? a : b)
-        : now;
-      const startMonth = monthStart(firstStart);
-      const historyMonths = monthsBetween(startMonth, currentMonth);
-      const labels = [];
-      const series = [];
+      const labels = ["Сейчас"];
+      const series = [0];
+      const horizon = MAX_FORECAST_MONTHS;
 
-      for (let i = 0; i <= historyMonths; i++) {
-        const dt = addMonths(startMonth, i);
-        labels.push(dt.toLocaleDateString("ru-RU", { month: "short", year: "numeric" }));
-        series.push(totalBalanceAt(monthEnd(dt)));
-      }
+      const ledgers = new Map();
+      state.obligations.forEach(ob => ledgers.set(ob.id, computeLedger(ob, now)));
 
-      const currentLedgers = new Map();
-      state.obligations.forEach(ob => currentLedgers.set(ob.id, computeLedger(ob, now)));
+      const closures = state.obligations
+        .map(ob => {
+          const ledger = ledgers.get(ob.id);
+          if (!ledger || ledger.balance <= 0) {
+            return null;
+          }
+          const sim = simulateFuture(ob, ledger, ob.termMonths || MAX_FORECAST_MONTHS, 0, ob.prepayMode);
+          return {
+            ob,
+            freedMonthly: Math.max(0, ledger.currentPayment),
+            monthsToZero: Math.max(0, Math.floor(sim.monthsToZero || horizon))
+          };
+        })
+        .filter(Boolean);
 
-      for (let m = 1; m <= MAX_FORECAST_MONTHS; m++) {
+      for (let m = 1; m <= horizon; m++) {
+        const freed = closures.reduce((sum, item) => sum + (item.monthsToZero <= m ? item.freedMonthly : 0), 0);
         labels.push(`+${m}м`);
-        let total = 0;
-        for (const ob of state.obligations) {
-          total += projectObligationBalance(ob, currentLedgers.get(ob.id), m);
-        }
-        series.push(total);
+        series.push(freed);
       }
 
-      return { labels, series, currentIndex: historyMonths };
+      return { labels, series, currentIndex: 0 };
     }
 
-    function simulateFuture(ob, ledger, months, extra = 0, prepayMode = "term") {
-      if (!ledger) return { totalInterest: 0, monthsToZero: 0, payment: 0 };
-
-      let principal = Math.max(0, ledger.principal);
-      let interest = Math.max(0, ledger.interest);
-      let totalInterest = 0;
-      let monthsToZero = ledger.balance <= 0 ? 0 : null;
-      let payment = Math.max(0, ledger.currentPayment || ob.scheduledPayment || ob.minPayment || 0);
-
-      function pay(amount) {
-        let remaining = Math.max(0, amount);
-        if (ob.kind === "credit") {
-          const usedI = Math.min(interest, remaining);
-          interest -= usedI;
-          remaining -= usedI;
-
-          const usedP = Math.min(principal, remaining);
-          principal -= usedP;
-          remaining -= usedP;
-        } else {
-          const usedP = Math.min(principal, remaining);
-          principal -= usedP;
-          remaining -= usedP;
-        }
-      }
-
-      if (extra > 0) {
-        pay(extra);
-        if (prepayMode === "payment") {
-          payment = Math.max(0, payment - extra);
-        }
-      }
-
-      for (let m = 1; m <= months; m++) {
-        if (ob.kind === "credit" && num(ob.apr) > 0 && principal > 0) {
-          const mi = principal * (num(ob.apr) / 100 / 12);
-          interest += mi;
-          totalInterest += mi;
-        }
-
-        pay(payment);
-        const balance = Math.max(0, principal + interest);
-        if (balance <= 0) {
-          monthsToZero = monthsToZero ?? m;
-          break;
-        }
-        if (monthsToZero === null) monthsToZero = m;
+    function simulateFuture(omonthsToZero = m;
       }
 
       if (monthsToZero === null) monthsToZero = months;
-      return { totalInterest, monthsToZero, payment };
+      return { totalInterest, totalPaid, monthsToZero, payment };
     }
 
     function buildRecommendations(ledgers) {
@@ -1689,10 +1651,11 @@
       let lo = 0;
       let hi = 60;
       let ans = null;
+
       for (let i = 0; i < 40; i++) {
         const mid = (lo + hi) / 2;
         const pmt = annuityPayment(amount, mid, termMonths);
-        const cost = pmt * termMonths + monthlyFee * termMonths + fee;
+        const cost = (pmt * termMonths) + (monthlyFee * termMonths) + fee;
         if (cost <= targetCost) {
           ans = mid;
           hi = mid;
@@ -1700,6 +1663,8 @@
           lo = mid;
         }
       }
+
+      if (ans === null || ans < 0.01) return null;
       return ans;
     }
 
@@ -1712,82 +1677,15 @@
       const ledger = ledgers.get(selected.id);
       const currentBalance = ledger ? ledger.balance : num(selected.initialPrincipal);
       const monthsLeft = ledger?.monthsLeft || selected.termMonths || MAX_FORECAST_MONTHS;
-      const currentFuture = simulateFuture(selected, ledger, monthsLeft, 0, selected.prepayMode);
-      const currentTotalCost = currentBalance + currentFuture.totalInterest;
+      const currentScenario = simulateFuture(selected, ledger, monthsLeft, 0, selected.prepayMode);
+      const currentTotalCost = currentScenario.totalPaid;
 
       const newAmount = num(state.ui.refi.amount || currentBalance);
       const newApr = num(state.ui.refi.apr || selected.apr);
       const newTerm = Math.max(1, Math.floor(num(state.ui.refi.termMonths || monthsLeft)));
       const fee = num(state.ui.refi.fee || 0);
       const monthlyFee = num(state.ui.refi.monthlyFee || 0);
-      const pmt = annuityPayment(newAmount, newApr, newTerm);
-      const newTotalCost = pmt * newTerm + monthlyFee * newTerm + fee;
-      const savings = currentTotalCost - newTotalCost;
-      const criticalRate = findCriticalRate(newAmount, newTerm, fee, monthlyFee, currentTotalCost);
-      const verdict = savings > 0 ? "Выгодно" : savings < 0 ? "Невыгодно" : "Почти без разницы";
-      const color = savings > 0 ? "green" : savings < 0 ? "amber" : "blue";
-
-      return {
-        selected,
-        currentBalance,
-        monthsLeft,
-        currentTotalCost,
-        newAmount,
-        newApr,
-        newTerm,
-        fee,
-        monthlyFee,
-        newTotalCost,
-        savings,
-        criticalRate,
-        verdict,
-        color
-      };
-    }
-
-    function computeDerived() {
-      const ledgers = new Map();
-      const totals = {
-        balance: 0,
-        principal: 0,
-        interest: 0,
-        scheduled: 0,
-        initial: 0,
-        family: 0,
-        activeCount: 0,
-        creditCount: 0,
-        familyCount: 0
-      };
-
-      state.obligations.forEach(ob => {
-        const ledger = computeLedger(ob, new Date());
-        ledgers.set(ob.id, ledger);
-        totals.balance += ledger.balance;
-        totals.principal += ledger.principal;
-        totals.interest += ledger.interest;
-        totals.scheduled += ledger.currentPayment;
-        totals.initial += Math.max(0, num(ob.initialPrincipal));
-        if (ob.kind === "family") totals.family += ledger.balance;
-        if (ob.kind === "credit") totals.creditCount++; else totals.familyCount++;
-        if (ledger.balance > 0) totals.activeCount++;
-      });
-
-      const seriesPack = buildPortfolioSeries();
-      const rec = buildRecommendations(ledgers);
-      const upcoming = buildUpcoming(ledgers);
-      const support = buildSupport(totals);
-      const refi = buildRefi(ledgers);
-      return { totals, ledgers, seriesPack, rec, upcoming, support, refi };
-    }
-
-    function renderSummary() {
-      const t = derived.totals;
-      const creditCount = state.obligations.filter(o => o.kind === "credit").length;
-      const familyCount = state.obligations.filter(o => o.kind === "family").length;
-      const avgRate = creditCount ? (state.obligations.filter(o => o.kind === "credit").reduce((s, o) => s + num(o.apr), 0) / creditCount) : 0;
-
-      els.summaryGrid.innerHTML = `
-        <div class="metric blue" data-summary="balance">
+      const newPayment = annuityPayment(newAmount, newApr, newTerm)">
           <div class="label">Общий остаток</div>
           <div class="value">${fmtMoney(t.balance)}</div>
           <div class="sub">Кредиты + займы родственникам</div>
@@ -2136,12 +2034,12 @@
         <div class="headline">${r.verdict}</div>
         <div class="text">
           Текущий остаток по <b>${esc(r.selected.name)}</b>: <b>${fmtMoney(r.currentBalance)}</b>.<br>
-          Старый сценарий: <b>${fmtMoney(r.currentTotalCost)}</b> до закрытия.<br>
+          Будущие платежи по старому кредиту: <b>${fmtMoney(r.currentTotalCost)}</b> до закрытия.<br>
           Новый сценарий: <b>${fmtMoney(r.newTotalCost)}</b> с учётом комиссии ${fmtMoney(r.fee)} и ежемесячной комиссии ${fmtMoney(r.monthlyFee)}.
         </div>
         <div class="mini-stats" style="margin-top:12px;">
           <div class="mini-stat"><div class="k">Выгода / убыток</div><div class="v">${fmtMoney(r.savings)}</div></div>
-          <div class="mini-stat"><div class="k">Критическая ставка</div><div class="v">${threshold}</div></div>
+          <div class="mini-stat"><div class="k">Критическая ставка</div><div class="v">${threshold !== "—" ? threshold : "не найдена"}</div></div>
           <div class="mini-stat"><div class="k">Срок нового кредита</div><div class="v">${r.newTerm} мес.</div></div>
         </div>
         <div class="text" style="margin-top:10px;">Если ставка нового кредита ниже критической, рефинанс обычно выгоден. Если выше — чаще проще гасить старое обязательство.</div>
@@ -2159,6 +2057,10 @@
       return {
         responsive: true,
         maintainAspectRatio: false,
+        interaction: {
+          mode: "nearest",
+          intersect: false
+        },
         scales: {
           y: {
             beginAtZero: true,
@@ -2173,7 +2075,8 @@
           legend: { display: false },
           tooltip: {
             callbacks: {
-              label: ctx => ` ${fmtMoney(ctx.parsed.y)}`
+              title: items => items.length ? items[0].label : "",
+              label: ctx => ` Свободный денежный поток: ${fmtMoney(ctx.parsed.y)} в месяц`
             }
           }
         }
@@ -2207,12 +2110,15 @@
           data: {
             labels: pack.labels,
             datasets: [{
-              label: "Остаток долга",
+              label: "Свободный денежный поток",
               data: pack.series,
-              tension: 0.35,
+              tension: 0.15,
               fill: true,
               borderWidth: 3,
-              pointRadius: 1,
+              pointRadius: 3,
+              pointHoverRadius: 6,
+              pointBackgroundColor: "#2563eb",
+              pointBorderColor: "#2563eb",
               borderColor: "#2563eb",
               backgroundColor: "rgba(37,99,235,.12)"
             }]
@@ -2229,7 +2135,7 @@
         charts.breakdown = new Chart(els.breakdownChart, {
           type: "doughnut",
           data: {
-            labels: ["Тело кредитов", "Начисленные проценты", "Долги родственникам"],
+            labels:исленные проценты", "Долги родственникам"],
             datasets: [{
               data: [
                 Math.max(0, derived.totals.principal),
@@ -2247,17 +2153,7 @@
           options: chartDoughnutOptions()
         });
       } else {
-        charts.breakdown.data.datasets[0].data = [
-          Math.max(0, derived.totals.principal),
-          Math.max(0, derived.totals.interest),
-          Math.max(0, derived.totals.family)
-        ];
-        charts.breakdown.update();
-      }
-
-      const s = derived.seriesPack.series;
-      const idx = derived.seriesPack.currentIndex || 0;
-      const at12 = s[idx + 12] ?? s[s.length - 1] ?? 0;
+        charts.breakdown.data.datasett12 = s[idx + 12] ?? s[s.length - 1] ?? 0;
       const at24 = s[idx + 24] ?? s[s.length - 1] ?? 0;
 
       els.forecastStats.innerHTML = `
@@ -2267,23 +2163,11 @@
       `;
 
       els.breakdownLegend.innerHTML = `
-        <div class="legend-row">
-          <div class="legend-left"><span class="dot" style="background:rgba(37,99,235,.85)"></span><span class="legend-name">Тело кредитов</span></div>
+        <div cla5,.85)"></span><span class="legend-name">Тело кредитов</span></div>
           <span class="legend-value">${fmtMoney(derived.totals.principal)}</span>
         </div>
         <div class="legend-row">
-          <div class="legend-left"><span class="dot" style="background:rgba(217,119,6,.85)"></span><span class="legend-name">Начисленные проценты</span></div>
-          <span class="legend-value">${fmtMoney(derived.totals.interest)}</span>
-        </div>
-        <div class="legend-row">
-          <div class="legend-left"><span class="dot" style="background:rgba(5,150,105,.85)"></span><span class="legend-name">Долги родственникам</span></div>
-          <span class="legend-value">${fmtMoney(derived.totals.family)}</span>
-        </div>
-      `;
-    }
-
-    function renderTxOptions() {
-      const options = state.obligations.length
+    ate.obligations.length
         ? state.obligations.map(ob => `<option value="${ob.id}">${esc(ob.name)} (${ob.kind === "credit" ? "кредит" : "родственник"})</option>`).join("")
         : `<option value="">Сначала добавьте обязательство</option>`;
 
@@ -2310,20 +2194,7 @@
       if (!docRef) {
         setSyncState("Локальный режим", "amber");
         if (!localOnlyNoticeShown) {
-          setNotice("Firebase ещё не подключён, данные сохраняются локально в этом браузере.", "warn");
-          localOnlyNoticeShown = true;
-        }
-      } else {
-        setSyncState("Синхронизировано", "green");
-      }
-
-      const r = state.ui.refi || {};
-      if (els.refiObligation && (!r.obligationId || !els.refiObligation.querySelector(`option[value="${r.obligationId}"]`))) {
-        const firstCredit = state.obligations.find(o => o.kind === "credit");
-        if (firstCredit) state.ui.refi.obligationId = firstCredit.id;
-      }
-
-      if (els.refiObligation) els.refiObligation.value = state.ui.refi.obligationId || els.refiObligation.value || "";
+          setNotice("Firebase ещё не подключён, данные сохраняются локальn) els.refiObligation.value = state.ui.refi.obligationId || els.refiObligation.value || "";
       if (els.refiAmount && !els.refiAmount.value) els.refiAmount.value = state.ui.refi.amount || "";
       if (els.refiApr && !els.refiApr.value) els.refiApr.value = state.ui.refi.apr || "";
       if (els.refiTerm && !els.refiTerm.value) els.refiTerm.value = state.ui.refi.termMonths || "";
