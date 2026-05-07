@@ -743,6 +743,52 @@ root.appendChild(el);
 
 }
 
+<!-- ВСТАВЬ ЭТОТ БЛОК ПЕРЕД function buildDebtSeries() -->
+
+<script>
+
+function projectObligationBalance(item, monthsAhead = 0) {
+
+  const monthlyRate =
+    (Number(item.rate) || 0) / 100 / 12;
+
+  const paidToBody = state.transactions
+    .filter(tx => tx.obligationId === item.id)
+    .reduce((sum, tx) => {
+      return sum + (Number(tx.toBody) || 0);
+    }, 0);
+
+  let balance =
+    Math.max(
+      0,
+      (Number(item.amount) || 0) - paidToBody
+    );
+
+  const payment =
+    Number(item.plannedPayment) ||
+    Number(item.minPayment) ||
+    0;
+
+  for (let i = 0; i < monthsAhead; i++) {
+
+    const interest =
+      balance * monthlyRate;
+
+    const body =
+      Math.max(0, payment - interest);
+
+    balance -= body;
+
+    if (balance <= 0) {
+      balance = 0;
+      break;
+    }
+  }
+
+  return Math.max(0, balance);
+}
+
+</script>  
 function buildDebtSeries(){
 
 const labels = [];
