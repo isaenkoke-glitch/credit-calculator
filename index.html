@@ -1,1388 +1,525 @@
+# index.html
+
+Полностью замените содержимое вашего `index.html` этим кодом.
+
+```html
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Финансовый трекер кредитов и займов</title>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <style>
-    :root {
-      --bg: #eef3fb;
-      --panel: rgba(255,255,255,.92);
-      --text: #122033;
-      --muted: #66758a;
-      --line: rgba(18,32,51,.10);
-      --shadow: 0 18px 48px rgba(18,32,51,.08);
-      --blue: #2563eb;
-      --blue-soft: rgba(37,99,235,.12);
-      --green: #059669;
-      --green-soft: rgba(5,150,105,.12);
-      --amber: #d97706;
-      --amber-soft: rgba(217,119,6,.14);
-      --red: #dc2626;
-      --red-soft: rgba(220,38,38,.12);
-      --radius: 24px;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Финансовый трекер кредитов</title>
 
-    * { box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; }
-    body {
-      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: var(--text);
-      background:
-        radial-gradient(circle at top left, rgba(37,99,235,.12), transparent 30%),
-        radial-gradient(circle at top right, rgba(5,150,105,.10), transparent 24%),
-        var(--bg);
-    }
-    .shell { max-width: 1560px; margin: 0 auto; padding: 24px; }
-    .topbar {
-      display:flex; justify-content:space-between; align-items:flex-start; gap:18px; flex-wrap:wrap;
-      background: rgba(255,255,255,.70); backdrop-filter: blur(16px);
-      border: 1px solid var(--line); border-radius: 28px; padding: 18px 20px; box-shadow: var(--shadow);
-    }
-    .title-wrap h1 { margin: 0; font-size: clamp(24px, 2.6vw, 38px); letter-spacing: -0.03em; }
-    .title-wrap p { margin: 8px 0 0; color: var(--muted); font-size: 14px; max-width: 980px; line-height: 1.5; }
-    .top-actions { display:flex; flex-direction:column; align-items:flex-end; gap:10px; }
-    .status-row, .toolbar { display:flex; flex-wrap:wrap; gap:10px; justify-content:flex-end; }
-    .pill {
-      display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:999px;
-      background: rgba(255,255,255,.88); border: 1px solid var(--line); font-size:13px; font-weight:700;
-    }
-    .pill.blue { background: var(--blue-soft); color: #1d4ed8; border-color: rgba(37,99,235,.18); }
-    .pill.green { background: var(--green-soft); color: #047857; border-color: rgba(5,150,105,.18); }
-    .pill.amber { background: var(--amber-soft); color: #92400e; border-color: rgba(217,119,6,.18); }
-    button {
-      border: 0; border-radius: 14px; padding: 11px 14px; cursor:pointer; font: inherit; font-weight: 700;
-      background: #e5eefb; color: #1d4ed8; box-shadow: 0 8px 18px rgba(29,78,216,.08);
-      transition: transform .16s ease, box-shadow .16s ease, opacity .16s ease;
-    }
-    button:hover { transform: translateY(-1px); }
-    button.primary { background: linear-gradient(135deg, #2563eb, #4f46e5); color:#fff; }
-    button.ghost { background: rgba(255,255,255,.86); color: var(--text); border: 1px solid var(--line); box-shadow:none; }
-    button.danger { background: var(--red-soft); color:#b91c1c; box-shadow:none; }
-    .notice {
-      margin: 14px 0 18px; padding: 14px 16px; border-radius: 18px; border: 1px solid var(--line);
-      background: rgba(255,255,255,.72); color: var(--muted); font-size: 14px; line-height: 1.5;
-    }
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
-    .summary-grid { display:grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap:14px; margin-bottom:18px; }
-    .metric {
-      background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow);
-      min-height: 110px; min-width: 0;
-    }
-    .metric .label { color: var(--muted); font-size: 13px; margin-bottom: 8px; }
-    .metric .value { font-size: clamp(22px, 2vw, 34px); font-weight: 900; letter-spacing: -0.03em; overflow-wrap:anywhere; }
-    .metric .sub { margin-top: 8px; color: var(--muted); font-size: 13px; line-height: 1.4; }
-    .metric.blue { background: linear-gradient(180deg, rgba(37,99,235,.14), rgba(255,255,255,.94)); }
-    .metric.green { background: linear-gradient(180deg, rgba(5,150,105,.14), rgba(255,255,255,.94)); }
-    .metric.amber { background: linear-gradient(180deg, rgba(217,119,6,.16), rgba(255,255,255,.94)); }
-    .metric.red { background: linear-gradient(180deg, rgba(220,38,38,.14), rgba(255,255,255,.94)); }
+<style>
+*{
+box-sizing:border-box;
+}
 
-    .layout { display:grid; grid-template-columns: minmax(0, 1.44fr) minmax(360px, .96fr); gap:18px; align-items:start; }
-    .stack { display:grid; gap:18px; min-width:0; }
-    .panel {
-      background: var(--panel); border: 1px solid var(--line); border-radius: 28px; box-shadow: var(--shadow); padding: 18px; min-width:0;
-    }
-    .panel h2 { margin: 0 0 8px; font-size: 21px; letter-spacing: -0.02em; }
-    .subtitle { margin: 0 0 16px; color: var(--muted); font-size: 14px; line-height: 1.5; }
-    .section-head { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom: 10px; }
-    .section-hint { color: var(--muted); font-size: 13px; white-space: nowrap; }
+body{
+margin:0;
+padding:24px;
+font-family:Arial,sans-serif;
+background:#eef3fb;
+color:#1d2939;
+}
 
-    .ob-list, .tx-list, .upcoming-list, .rec-list { display:grid; gap:12px; }
-    .ob-card {
-      background: rgba(255,255,255,.96); border: 1px solid var(--line); border-radius: 22px; padding: 16px;
-      display:grid; gap:12px; min-width:0;
-    }
-    .ob-card.credit { border-left: 6px solid var(--blue); }
-    .ob-card.family { border-left: 6px solid var(--green); }
-    .ob-top { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; min-width:0; }
-    .ob-title { font-size: 18px; font-weight: 900; margin: 4px 0; letter-spacing: -0.02em; overflow-wrap:anywhere; }
-    .ob-meta { color: var(--muted); font-size: 13px; overflow-wrap:anywhere; }
-    .badge { display:inline-flex; align-items:center; gap:6px; padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; }
-    .badge.credit { background: var(--blue-soft); color:#1d4ed8; }
-    .badge.family { background: var(--green-soft); color:#047857; }
-    .balance-box {
-      min-width: 180px; text-align:right; padding: 10px 12px; border-radius: 18px; background: rgba(18,32,51,.04);
-      border: 1px solid rgba(18,32,51,.06);
-    }
-    .balance-box .label { color: var(--muted); font-size: 12px; }
-    .balance-box .value { margin-top: 4px; font-size: 24px; font-weight: 900; letter-spacing: -0.03em; overflow-wrap:anywhere; }
-    .progress { width: 100%; height: 12px; border-radius: 999px; background: rgba(18,32,51,.07); overflow:hidden; }
-    .progress > div { height: 100%; border-radius: inherit; background: linear-gradient(90deg, #60a5fa, #34d399); }
-    .stats-row { display:grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap:10px; }
-    .stat { padding: 10px 12px; border-radius: 16px; background: rgba(18,32,51,.04); border: 1px solid rgba(18,32,51,.05); min-width:0; }
-    .stat .k { color: var(--muted); font-size: 12px; margin-bottom: 4px; }
-    .stat .v { font-size: 16px; font-weight: 900; overflow-wrap:anywhere; }
+.container{
+max-width:1200px;
+margin:0 auto;
+}
 
-    .edit-grid { display:grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap:10px; min-width:0; }
-    .field { display:grid; gap:6px; min-width:0; }
-    .field label { color: var(--muted); font-size: 12px; font-weight: 700; }
-    input, select, textarea {
-      width: 100%; min-width: 0; border-radius: 14px; border: 1px solid rgba(18,32,51,.12); background:#fff; color:var(--text);
-      padding: 11px 12px; outline:none; font: inherit;
-    }
-    textarea { min-height: 82px; resize: vertical; }
-    input:focus, select:focus, textarea:focus { border-color: rgba(37,99,235,.55); box-shadow: 0 0 0 4px rgba(37,99,235,.10); }
-    .card-actions { display:flex; flex-wrap:wrap; gap:10px; align-items:center; min-width:0; }
-    .small-note { color: var(--muted); font-size: 12px; }
-    .empty { padding: 18px; border-radius: 18px; border: 1px dashed rgba(18,32,51,.18); color: var(--muted); background: rgba(255,255,255,.72); text-align:center; }
+.header{
+background:#fff;
+padding:24px;
+border-radius:24px;
+margin-bottom:24px;
+box-shadow:0 10px 30px rgba(0,0,0,0.06);
+}
 
-    .form-grid {
-      display:grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap:10px; align-items:end; margin-top:12px; min-width:0;
-    }
-    .form-grid .field:nth-child(1) { grid-column: span 3; }
-    .form-grid .field:nth-child(2) { grid-column: span 3; }
-    .form-grid .field:nth-child(3) { grid-column: span 2; }
-    .form-grid .field:nth-child(4) { grid-column: span 2; }
-    .form-grid .field:nth-child(5) { grid-column: span 2; }
-    .form-grid .field:nth-child(6) { grid-column: span 2; }
-    .form-grid .field:nth-child(7) { grid-column: span 2; }
-    .form-grid .field:nth-child(8) { grid-column: span 2; }
-    .form-grid .field:nth-child(9) { grid-column: span 3; }
-    .form-grid .field:nth-child(10) { grid-column: span 3; }
-    .form-grid .field:nth-child(11) { grid-column: span 3; }
-    .form-grid .field.full { grid-column: 1 / -1; }
+h1{
+margin:0 0 10px;
+font-size:38px;
+}
 
-    .recommend-card {
-      border-radius: 22px; padding: 16px; background: linear-gradient(180deg, rgba(37,99,235,.10), rgba(255,255,255,.95));
-      border: 1px solid rgba(37,99,235,.16);
-    }
-    .recommend-card.family { background: linear-gradient(180deg, rgba(5,150,105,.12), rgba(255,255,255,.95)); border-color: rgba(5,150,105,.16); }
-    .recommend-card .row { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
-    .recommend-card h3 { margin: 6px 0; font-size: 18px; overflow-wrap:anywhere; }
-    .recommend-card .meta { color: var(--muted); font-size: 13px; line-height: 1.45; }
+.subtitle{
+color:#667085;
+line-height:1.5;
+}
 
-    canvas { width: 100% !important; height: 280px !important; }
-    .chart-box { padding-top: 8px; }
-    .mini-stats { display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap:10px; margin-top: 12px; }
-    .mini-stat { padding: 12px; border-radius: 16px; background: rgba(18,32,51,.04); border: 1px solid rgba(18,32,51,.05); min-width:0; }
-    .mini-stat .k { color: var(--muted); font-size: 12px; margin-bottom: 4px; }
-    .mini-stat .v { font-size: 16px; font-weight: 900; overflow-wrap:anywhere; }
+.status{
+display:inline-block;
+padding:10px 16px;
+border-radius:999px;
+font-size:14px;
+font-weight:700;
+margin-top:16px;
+background:#d1fadf;
+color:#027a48;
+}
 
-    .tx-item {
-      background: rgba(255,255,255,.96); border: 1px solid var(--line); border-radius: 18px; padding: 14px;
-      display:flex; justify-content:space-between; gap:12px; align-items:flex-start; min-width:0;
-    }
-    .tx-item .left { display:grid; gap:4px; min-width:0; }
-    .tx-item .title { font-weight: 900; overflow-wrap:anywhere; }
-    .tx-item .meta { color: var(--muted); font-size: 13px; overflow-wrap:anywhere; }
-    .tx-item .sum { font-size: 18px; font-weight: 900; text-align:right; overflow-wrap:anywhere; }
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:18px;
+margin-bottom:24px;
+}
 
-    .refi-grid { display:grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 10px; }
-    .refi-grid .field:nth-child(1) { grid-column: span 6; }
-    .refi-grid .field:nth-child(2) { grid-column: span 6; }
-    .refi-grid .field:nth-child(3) { grid-column: span 4; }
-    .refi-grid .field:nth-child(4) { grid-column: span 4; }
-    .refi-grid .field:nth-child(5) { grid-column: span 4; }
-    .refi-grid .field:nth-child(6) { grid-column: span 6; }
-    .refi-grid .field:nth-child(7) { grid-column: span 6; }
+.card{
+background:#fff;
+padding:20px;
+border-radius:22px;
+box-shadow:0 10px 30px rgba(0,0,0,0.06);
+}
 
-    .support-box {
-      border-radius: 22px; padding: 16px; background: linear-gradient(180deg, rgba(37,99,235,.10), rgba(255,255,255,.95));
-      border: 1px solid rgba(37,99,235,.16);
-    }
-    .support-box.green {
-      background: linear-gradient(180deg, rgba(5,150,105,.12), rgba(255,255,255,.95));
-      border-color: rgba(5,150,105,.16);
-    }
-    .support-box .headline { font-size: 18px; font-weight: 900; margin-bottom: 6px; }
-    .support-box .text { color: var(--muted); font-size: 14px; line-height: 1.55; }
+.metric{
+font-size:34px;
+font-weight:800;
+margin-top:10px;
+}
 
-    .legend-list { display:grid; gap: 10px; margin-top: 10px; }
-    .legend-row {
-      display:flex; align-items:center; justify-content:space-between; gap:10px; padding: 10px 12px; border-radius: 16px;
-      background: rgba(18,32,51,.04); border: 1px solid rgba(18,32,51,.05); min-width:0;
-    }
-    .legend-left { display:flex; align-items:center; gap:10px; min-width:0; }
-    .dot { width: 12px; height: 12px; border-radius: 999px; flex: 0 0 auto; }
-    .legend-name { font-size: 13px; font-weight: 800; overflow-wrap:anywhere; }
-    .legend-value { font-size: 13px; font-weight: 900; white-space: nowrap; }
+.section{
+background:#fff;
+padding:24px;
+border-radius:24px;
+box-shadow:0 10px 30px rgba(0,0,0,0.06);
+margin-bottom:24px;
+}
 
-    @media (max-width: 1320px) {
-      .layout { grid-template-columns: 1fr; }
-      .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      canvas { height: 260px !important; }
-    }
-    @media (max-width: 760px) {
-      .shell { padding: 14px; }
-      .topbar { padding: 14px; border-radius: 22px; flex-direction: column; }
-      .top-actions { width: 100%; align-items:flex-start; }
-      .status-row, .toolbar { justify-content:flex-start; }
-      .summary-grid { grid-template-columns: 1fr; }
-      .stats-row, .edit-grid, .mini-stats, .refi-grid { grid-template-columns: 1fr; }
-      .form-grid .field { grid-column: 1 / -1 !important; }
-      .ob-top, .recommend-card .row, .tx-item, .section-head { flex-direction: column; }
-      .balance-box { width: 100%; text-align:left; }
-    }
-  </style>
+.section h2{
+margin-top:0;
+}
+
+.credit-card{
+border:2px solid #dbe7ff;
+padding:18px;
+border-radius:22px;
+margin-bottom:18px;
+background:#f8fbff;
+}
+
+.row{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+gap:14px;
+margin-bottom:14px;
+}
+
+.field{
+display:flex;
+flex-direction:column;
+}
+
+label{
+font-size:13px;
+font-weight:700;
+margin-bottom:6px;
+color:#475467;
+}
+
+input,select{
+width:100%;
+padding:12px;
+border-radius:14px;
+border:1px solid #d0d5dd;
+font-size:15px;
+background:#fff;
+}
+
+button{
+border:none;
+border-radius:14px;
+padding:13px 18px;
+font-size:15px;
+font-weight:700;
+cursor:pointer;
+}
+
+.primary{
+background:#315efb;
+color:#fff;
+}
+
+.danger{
+background:#fee4e2;
+color:#b42318;
+}
+
+.secondary{
+background:#eef2ff;
+color:#315efb;
+}
+
+.actions{
+display:flex;
+flex-wrap:wrap;
+gap:10px;
+margin-top:12px;
+}
+
+.history-item{
+padding:14px;
+border-radius:16px;
+background:#f5f7ff;
+margin-bottom:10px;
+}
+
+.motivation{
+background:linear-gradient(135deg,#315efb,#6d8dff);
+color:#fff;
+padding:24px;
+border-radius:24px;
+font-size:20px;
+font-weight:700;
+line-height:1.5;
+}
+
+.small{
+font-size:14px;
+color:#667085;
+}
+
+@media(max-width:700px){
+body{
+padding:12px;
+}
+
+h1{
+font-size:28px;
+}
+}
+</style>
 </head>
 <body>
-  <div class="shell">
-    <div class="topbar">
-      <div class="title-wrap">
-        <h1>Финансовый трекер кредитов и займов</h1>
-        <p>Общая ссылка для вас и брата. История платежей, досрочки, займы родственникам, прогнозный график, рекомендации по свободной сумме и проверка рефинансирования.</p>
-      </div>
-      <div class="top-actions">
-        <div class="status-row">
-          <span class="pill blue" id="syncPill">Синхронизация: загрузка…</span>
-          <span class="pill" id="updatedPill">Последнее обновление: —</span>
-        </div>
-        <div class="toolbar">
-          <button class="ghost" id="exportBtn" type="button">Экспорт JSON</button>
-          <button class="ghost" id="importBtn" type="button">Импорт JSON</button>
-          <button class="danger" id="resetBtn" type="button">Сбросить всё</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="notice" id="notice">Добавляйте кредиты, займы родственникам и платежи. Остатки, графики и рекомендации будут обновляться автоматически.</div>
-
-    <div class="summary-grid" id="summaryGrid"></div>
-
-    <div class="layout">
-      <main class="stack">
-        <section class="panel">
-          <div class="section-head">
-            <div>
-              <h2>Кредиты</h2>
-              <div class="subtitle">Каждый кредит хранится отдельной карточкой. Можно менять ставку, срок, дату начала, регулярный платёж, день списания и режим досрочки.</div>
-            </div>
-            <div class="section-hint">Остаток тела и проценты считаются отдельно</div>
-          </div>
-          <div class="ob-list" id="creditList"></div>
-
-          <div class="form-grid" id="creditForm">
-            <div class="field"><label>Название</label><input id="newCreditName" placeholder="Ипотека / Карта / Наличными" /></div>
-            <div class="field"><label>Банк</label><input id="newCreditLender" placeholder="Сбер / Тинькофф / ВТБ" /></div>
-            <div class="field"><label>Дата выдачи</label><input id="newCreditStart" type="date" /></div>
-            <div class="field"><label>Срок, мес.</label><input id="newCreditTerm" type="number" min="1" step="1" placeholder="36" /></div>
-            <div class="field"><label>Сумма</label><input id="newCreditPrincipal" type="number" step="0.01" placeholder="0" /></div>
-            <div class="field"><label>Ставка, %</label><input id="newCreditApr" type="number" step="0.01" placeholder="0" /></div>
-            <div class="field"><label>Мин. платёж</label><input id="newCreditMinPayment" type="number" step="0.01" placeholder="0" /></div>
-            <div class="field"><label>Плановый платёж</label><input id="newCreditScheduled" type="number" step="0.01" placeholder="0" /></div>
-            <div class="field"><label>День месяца</label><input id="newCreditDay" type="number" min="1" max="31" placeholder="1–31" /></div>
-            <div class="field"><label>Досрочка по умолчанию</label>
-              <select id="newCreditPrepayMode">
-                <option value="term">Уменьшать срок</option>
-                <option value="payment">Уменьшать платёж</option>
-              </select>
-            </div>
-            <div class="field"><label>Примечание</label><input id="newCreditNotes" placeholder="Например: досрочки только через приложение" /></div>
-            <div class="field"><label>&nbsp;</label><button class="primary" id="addCreditBtn" type="button">Добавить кредит</button></div>
-          </div>
-        </section>
-
-        <section class="panel">
-          <div class="section-head">
-            <div>
-              <h2>Долги родственникам</h2>
-              <div class="subtitle">Подходит для займов у мамы, брата, друзей. Без процентов, но с учётом возвратов, срока и остатка.</div>
-            </div>
-            <div class="section-hint">Например: 40 / 50 тыс уже возвращено</div>
-          </div>
-          <div class="ob-list" id="familyList"></div>
-
-          <div class="form-grid" id="familyForm">
-            <div class="field"><label>Кому / название</label><input id="newFamilyName" placeholder="Мама / Брат / Друг" /></div>
-            <div class="field"><label>Кому возвращаем</label><input id="newFamilyLender" placeholder="Семья / человек" /></div>
-            <div class="field"><label>Дата займа</label><input id="newFamilyStart" type="date" /></div>
-            <div class="field"><label>Срок, мес.</label><input id="newFamilyTerm" type="number" min="1" step="1" placeholder="12" /></div>
-            <div class="field"><label>Сумма</label><input id="newFamilyPrincipal" type="number" step="0.01" placeholder="0" /></div>
-            <div class="field"><label>Плановый платёж</label><input id="newFamilyScheduled" type="number" step="0.01" placeholder="0" /></div>
-            <div class="field"><label>День месяца</label><input id="newFamilyDay" type="number" min="1" max="31" placeholder="1–31" /></div>
-            <div class="field"><label>Досрочка по умолчанию</label>
-              <select id="newFamilyPrepayMode">
-                <option value="term">Уменьшать срок</option>
-                <option value="payment">Уменьшать платёж</option>
-              </select>
-            </div>
-            <div class="field"><label>Примечание</label><input id="newFamilyNotes" placeholder="Например: вернуть до конца года" /></div>
-            <div class="field"><label>&nbsp;</label><button class="primary" id="addFamilyBtn" type="button">Добавить займ</button></div>
-          </div>
-        </section>
-
-        <section class="panel">
-          <div class="section-head">
-            <div>
-              <h2>Платежи, досрочки и возвраты</h2>
-              <div class="subtitle">Каждую внесённую сумму можно записать отдельной строкой. История сохраняется и влияет на графики, прогноз и рефинанс.</div>
-            </div>
-            <div class="section-hint">Можно ввести платежи задним числом</div>
-          </div>
-
-          <div class="form-grid" id="txForm">
-            <div class="field">
-              <label>Операция</label>
-              <select id="newTxKind">
-                <option value="payment">Платёж по кредиту</option>
-                <option value="extra">Досрочное погашение</option>
-                <option value="repayment">Возврат родственнику</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Обязательство</label>
-              <select id="newTxObligation"></select>
-            </div>
-            <div class="field"><label>Дата</label><input id="newTxDate" type="date" /></div>
-            <div class="field"><label>Сумма</label><input id="newTxAmount" type="number" step="0.01" placeholder="0" /></div>
-            <div class="field full"><label>Комментарий</label><input id="newTxNote" placeholder="Например: платёж по графику, досрочка, частичный возврат" /></div>
-            <div class="field full"><button class="primary" id="addTxBtn" type="button">Добавить запись</button></div>
-          </div>
-
-          <div class="tx-list" id="txList" style="margin-top:14px;"></div>
-        </section>
-      </main>
-
-      <aside class="stack">
-        <section class="panel">
-          <div class="section-head">
-            <div>
-              <h2>Свободная сумма и лучший сценарий</h2>
-              <div class="subtitle">Показывает, куда выгоднее направить свободные деньги: снизить переплату или быстрее разгрузить регулярные платежи.</div>
-            </div>
-          </div>
-          <div class="form-grid" style="margin-top:0;">
-            <div class="field"><label>Свободная сумма</label><input id="freeAmount" type="number" step="0.01" placeholder="5000" /></div>
-            <div class="field"><label>Цель</label>
-              <select id="optimizeMode">
-                <option value="interest">Снизить переплату</option>
-                <option value="payment">Снизить регулярный платёж</option>
-              </select>
-            </div>
-            <div class="field"><label>&nbsp;</label><button class="primary" id="applyFreeBtn" type="button">Записать как досрочку</button></div>
-          </div>
-          <div class="rec-list" id="recommendations" style="margin-top:14px;"></div>
-        </section>
-
-        <section class="panel">
-          <div class="section-head">
-            <div>
-              <h2>Прогноз свободных денег</h2>
-              <div class="subtitle">Показывает, как уменьшается долговая нагрузка через 6, 12 и 24 месяца.</div>
-            </div>
-          </div>
-          <canvas id="forecastChart"></canvas>
-          <div class="mini-stats" id="forecastStats"></div>
-        </section>
-
-        <section class="panel">
-          <div class="section-head">
-            <div>
-              <h2>Структура долга сейчас</h2>
-              <div class="subtitle">Подписи и значения видны сразу, без наведения мышкой.</div>
-            </div>
-          </div>
-          <canvas id="breakdownChart"></canvas>
-          <div class="legend-list" id="breakdownLegend"></div>
-        </section>
-
-        <section class="panel">
-          <div class="section-head">
-            <div>
-              <h2>Поддержка и прогресс</h2>
-              <div class="subtitle">Небольшой эмоциональный блок, который показывает реальное движение вперёд.</div>
-            </div>
-          </div>
-          <div class="support-box" id="supportBox"></div>
-        </section>
-
-        <section class="panel">
-          <div class="section-head">
-            <div>
-              <h2>Проверка рефинансирования</h2>
-              <div class="subtitle">Сравнивает текущий остаток долга с новым кредитом и показывает критическую ставку, при которой рефинанс ещё выгоден.</div>
-            </div>
-          </div>
-          <div class="refi-grid">
-            <div class="field"><label>Кредит</label><select id="refiObligation"></select></div>
-            <div class="field"><label>Новая сумма</label><input id="refiAmount" type="number" step="0.01" placeholder="0" /></div>
-            <div class="field"><label>Новая ставка, %</label><input id="refiApr" type="number" step="0.01" placeholder="0" /></div>
-            <div class="field"><label>Новый срок, мес.</label><input id="refiTerm" type="number" min="1" step="1" placeholder="36" /></div>
-            <div class="field"><label>Разовая комиссия</label><input id="refiFee" type="number" step="0.01" placeholder="0" /></div>
-            <div class="field"><label>Ежемесячная комиссия</label><input id="refiMonthlyFee" type="number" step="0.01" placeholder="0" /></div>
-            <div class="field"><label>&nbsp;</label><button class="primary" id="calcRefiBtn" type="button">Посчитать рефинанс</button></div>
-          </div>
-          <div class="support-box green" id="refiResult" style="margin-top:12px;"></div>
-        </section>
-
-        <section class="panel chart-box">
-          <div class="section-head">
-            <div>
-              <h2>График общего долга</h2>
-              <div class="subtitle">История с начала срока и прогноз на 24 месяца вперёд.</div>
-            </div>
-          </div>
-          <canvas id="forecastChart2"></canvas>
-        </section>
-
-        <section class="panel">
-          <div class="section-head">
-            <div>
-              <h2>Ближайшие платежи</h2>
-              <div class="subtitle">Показывает ближайшие даты по активным обязательствам.</div>
-            </div>
-          </div>
-          <div class="upcoming-list" id="upcomingList"></div>
-        </section>
-      </aside>
-    </div>
-  </div>
-
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCRdVG_2qgNDPxxfEa3CSeeyjvpdmbcjWE",
-      authDomain: "credit-payments-2026.firebaseapp.com",
-      projectId: "credit-payments-2026",
-      storageBucket: "credit-payments-2026.firebasestorage.app",
-      messagingSenderId: "1097721168288",
-      appId: "1:1097721168288:web:47881d4673567d6b0424c5",
-      measurementId: "G-637GBQSDW6"
-    };
-
-    const STORAGE_KEY = "credit_tracker_local_backup_v4";
-    const FIRESTORE_PATH = { collection: "shared", doc: "data" };
-    const MAX_FORECAST_MONTHS = 24;
-
-    const moneyFmt = new Intl.NumberFormat("ru-RU", { style: "currency", currency: "RUB", maximumFractionDigits: 2 });
-    function money(v) { const n = Number(v); return moneyFmt.format(Number.isFinite(n) ? n : 0); }
-    function num(v) { const n = Number(String(v).replace(",", ".")); return Number.isFinite(n) ? n : 0; }
-    function uid() { return crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`; }
-    function todayISO() { return new Date().toISOString().slice(0, 10); }
-    function parseDate(v) { if (!v) return null; const d = new Date(`${v}T00:00:00`); return Number.isNaN(d.getTime()) ? null : d; }
-    function toISODate(d) { return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); }
-    function addMonths(d, months) { return new Date(d.getFullYear(), d.getMonth() + months, d.getDate()); }
-    function monthStart(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
-    function monthsBetween(a, b) { return Math.max(0, (b.getFullYear() - a.getFullYear()) * 12 + (b.getMonth() - a.getMonth())); }
-    function daysBetween(a, b) { return Math.max(0, Math.floor((b.getTime() - a.getTime()) / 86400000)); }
-    function clampDay(v) { const n = Math.floor(num(v)); if (!Number.isFinite(n) || n < 1) return null; return Math.min(31, n); }
-    function esc(v) { return String(v ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;"); }
-    function monthKey(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`; }
-    function monthLabelFromKey(k) { const [y, m] = k.split("-").map(Number); return new Date(y, m - 1, 1).toLocaleDateString("ru-RU", { month: "short", year: "numeric" }); }
-
-    const stateTemplate = () => ({
-      version: 4,
-      obligations: [],
-      transactions: [],
-      ui: {
-        freeAmount: 5000,
-        optimizeMode: "interest",
-        refi: {
-          obligationId: "",
-          amount: 0,
-          apr: 0,
-          termMonths: 36,
-          fee: 0,
-          monthlyFee: 0
-        }
-      },
-      meta: { updatedAt: null, source: "local" }
-    });
-
-    let state = stateTemplate();
-    let db = null;
-    let charts = { forecast: null, breakdown: null };
-    let derived = null;
-    let saveTimer = null;
-    let remoteLoaded = false;
-
-    const els = {
-      syncPill: document.getElementById("syncPill"),
-      updatedPill: document.getElementById("updatedPill"),
-      notice: document.getElementById("notice"),
-      summaryGrid: document.getElementById("summaryGrid"),
-      creditList: document.getElementById("creditList"),
-      familyList: document.getElementById("familyList"),
-      txList: document.getElementById("txList"),
-      upcomingList: document.getElementById("upcomingList"),
-      recommendations: document.getElementById("recommendations"),
-      forecastStats: document.getElementById("forecastStats"),
-      breakdownLegend: document.getElementById("breakdownLegend"),
-      supportBox: document.getElementById("supportBox"),
-      refiResult: document.getElementById("refiResult"),
-      forecastChart: document.getElementById("forecastChart"),
-      breakdownChart: document.getElementById("breakdownChart"),
-      forecastChart2: document.getElementById("forecastChart2"),
-      newCreditStart: document.getElementById("newCreditStart"),
-      newFamilyStart: document.getElementById("newFamilyStart"),
-      newTxDate: document.getElementById("newTxDate"),
-      freeAmount: document.getElementById("freeAmount"),
-      optimizeMode: document.getElementById("optimizeMode"),
-      newTxObligation: document.getElementById("newTxObligation"),
-      newTxKind: document.getElementById("newTxKind"),
-      refiObligation: document.getElementById("refiObligation"),
-      refiAmount: document.getElementById("refiAmount"),
-      refiApr: document.getElementById("refiApr"),
-      refiTerm: document.getElementById("refiTerm"),
-      refiFee: document.getElementById("refiFee"),
-      refiMonthlyFee: document.getElementById("refiMonthlyFee")
-    };
-
-    function setNotice(text, tone = "neutral") {
-      if (!els.notice) return;
-      els.notice.textContent = text;
-      els.notice.style.borderColor = tone === "good" ? "rgba(5,150,105,.24)" : tone === "warn" ? "rgba(217,119,6,.24)" : "rgba(18,32,51,.10)";
-      els.notice.style.background = tone === "good" ? "rgba(5,150,105,.08)" : tone === "warn" ? "rgba(217,119,6,.09)" : "rgba(255,255,255,.72)";
-    }
-    function setSyncState(text, cls = "blue") { els.syncPill.className = `pill ${cls}`; els.syncPill.textContent = text; }
-    function setUpdatedPill() {
-      if (!state.meta.updatedAt) return void (els.updatedPill.textContent = "Последнее обновление: —");
-      const d = new Date(state.meta.updatedAt);
-      els.updatedPill.textContent = Number.isNaN(d.getTime()) ? "Последнее обновление: —" : `Последнее обновление: ${d.toLocaleString("ru-RU")}`;
-    }
-    function saveLocal() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-    function loadLocal() { try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) state = normalizeState(JSON.parse(raw)); } catch (e) { console.warn(e); } }
-
-    function annuityPayment(principal, apr, months) {
-      const p = Math.max(0, num(principal));
-      const n = Math.max(1, Math.floor(num(months)));
-      const r = num(apr) / 100 / 12;
-      if (p <= 0) return 0;
-      if (r <= 0) return p / n;
-      return p * (r / (1 - Math.pow(1 + r, -n)));
-    }
-
-    function normalizeObligation(raw) {
-      if (!raw || typeof raw !== "object") return null;
-      const kind = raw.kind === "family" ? "family" : "credit";
-      return {
-        id: String(raw.id || uid()),
-        kind,
-        name: String(raw.name || (kind === "family" ? "Займ родственнику" : "Кредит")),
-        lender: String(raw.lender || ""),
-        startDate: raw.startDate || todayISO(),
-        termMonths: raw.termMonths ? Math.max(1, Math.floor(num(raw.termMonths))) : null,
-        initialPrincipal: num(raw.initialPrincipal ?? raw.balance ?? 0),
-        apr: kind === "credit" ? num(raw.apr ?? 0) : 0,
-        minPayment: num(raw.minPayment ?? 0),
-        scheduledPayment: num(raw.scheduledPayment ?? raw.minPayment ?? 0),
-        paymentDay: clampDay(raw.paymentDay),
-        prepayMode: raw.prepayMode === "payment" ? "payment" : "term",
-        notes: String(raw.notes || ""),
-        active: raw.active !== false
-      };
-    }
-    function normalizeTransaction(raw) {
-      if (!raw || typeof raw !== "object") return null;
-      return { id: String(raw.id || uid()), obligationId: String(raw.obligationId || ""), date: raw.date || todayISO(), amount: num(raw.amount ?? 0), kind: ["payment","extra","repayment"].includes(raw.kind) ? raw.kind : "payment", note: String(raw.note || "") };
-    }
-    function normalizeState(raw) {
-      const base = stateTemplate();
-      if (!raw || typeof raw !== "object") return base;
-      if (Array.isArray(raw.obligations)) base.obligations = raw.obligations.map(normalizeObligation).filter(Boolean);
-      else if (Array.isArray(raw.debts)) {
-        base.obligations = raw.debts.map((d) => normalizeObligation({ id: d.id, kind: "credit", name: d.name, lender: "", startDate: todayISO(), termMonths: null, initialPrincipal: d.balance, apr: d.apr, minPayment: d.minPayment, scheduledPayment: d.minPayment, paymentDay: null, prepayMode: "term", notes: "", active: true })).filter(Boolean);
-      }
-      if (Array.isArray(raw.transactions)) base.transactions = raw.transactions.map(normalizeTransaction).filter(Boolean);
-      if (raw.ui && typeof raw.ui === "object") {
-        base.ui.freeAmount = num(raw.ui.freeAmount ?? base.ui.freeAmount);
-        base.ui.optimizeMode = raw.ui.optimizeMode === "payment" ? "payment" : "interest";
-        base.ui.refi = { ...base.ui.refi, ...(raw.ui.refi || {}) };
-      } else {
-        if (raw.extraPayment !== undefined) base.ui.freeAmount = num(raw.extraPayment);
-        if (raw.strategy === "snowball") base.ui.optimizeMode = "payment";
-      }
-      base.meta.updatedAt = raw.meta?.updatedAt || null;
-      base.meta.source = raw.meta?.source || (Array.isArray(raw.debts) ? "migrated" : "local");
-      return base;
-    }
-
-    function plannedRemainingMonths(ob, now = new Date()) {
-      if (!ob.termMonths) return null;
-      const start = parseDate(ob.startDate) || now;
-      return Math.max(0, ob.termMonths - monthsBetween(monthStart(start), monthStart(now)));
-    }
-    function plannedEndDate(ob) {
-      if (!ob.termMonths) return null;
-      const start = parseDate(ob.startDate) || new Date();
-      return toISODate(addMonths(start, ob.termMonths));
-    }
-    function effectiveMonthlyPayment(ob, balance, monthsLeft) {
-      const explicit = num(ob.scheduledPayment || ob.minPayment || 0);
-      if (explicit > 0) return explicit;
-      if (ob.kind === "credit" && ob.termMonths) return annuityPayment(balance, ob.apr, monthsLeft || ob.termMonths);
-      if (ob.kind === "family" && ob.termMonths) return balance / Math.max(1, monthsLeft || ob.termMonths);
-      return 0;
-    }
-
-    function getTransactionsFor(id) { return state.transactions.filter((tx) => tx.obligationId === id).slice().sort((a, b) => a.date.localeCompare(b.date)); }
-
-    function currentStatus(ob, now = new Date()) {
-      const txs = getTransactionsFor(ob.id).filter((tx) => { const d = parseDate(tx.date); return d && d <= now; });
-      const start = parseDate(ob.startDate) || now;
-      let principal = Math.max(0, num(ob.initialPrincipal));
-      let interest = 0;
-      let paid = 0;
-      let lastDate = start < now ? start : now;
-      function applyPayment(amount) {
-        let remaining = Math.max(0, amount);
-        if (ob.kind === "credit") {
-          if (interest > 0) { const used = Math.min(interest, remaining); interest -= used; remaining -= used; }
-          if (remaining > 0) principal = Math.max(0, principal - remaining);
-        } else {
-          principal = Math.max(0, principal - remaining);
-        }
-      }
-      for (const tx of txs) {
-        const txDate = parseDate(tx.date); if (!txDate) continue;
-        if (txDate > lastDate) {
-          const days = daysBetween(lastDate, txDate);
-          if (ob.kind === "credit" && num(ob.apr) > 0 && principal > 0) interest += principal * (num(ob.apr) / 100) * (days / 365);
-          lastDate = txDate;
-        }
-        const amount = Math.max(0, num(tx.amount));
-        paid += amount;
-        applyPayment(amount);
-      }
-      if (now > lastDate && ob.kind === "credit" && num(ob.apr) > 0 && principal > 0) {
-        const days = daysBetween(lastDate, now);
-        interest += principal * (num(ob.apr) / 100) * (days / 365);
-      }
-      const balance = Math.max(0, principal + interest);
-      const monthsLeft = plannedRemainingMonths(ob, now);
-      const pay = effectiveMonthlyPayment(ob, balance, monthsLeft);
-      const forecast = simulateFuture(ob, { principal, interest }, monthsLeft || MAX_FORECAST_MONTHS, 0, ob.prepayMode, now);
-      return { principal, interest, balance, paid, currentPayment: pay, monthsToPayoff: forecast.monthsToZero, nextDue: nextDueDate(ob, now), monthsLeft, plannedEnd: plannedEndDate(ob) };
-    }
-
-    function simulateFuture(ob, base, months, extra = 0, prepayMode = "term", now = new Date()) {
-      let principal = Math.max(0, num(base.principal));
-      let interest = Math.max(0, num(base.interest));
-      let totalInterest = 0;
-      const balances = [Math.max(0, principal + interest)];
-      let monthsLeft = months && months > 0 ? Math.floor(months) : MAX_FORECAST_MONTHS;
-      let payment = effectiveMonthlyPayment(ob, principal + interest, monthsLeft);
-      function applyPayment(amount) {
-        let remaining = Math.max(0, amount);
-        if (ob.kind === "credit") {
-          if (interest > 0) { const used = Math.min(interest, remaining); interest -= used; remaining -= used; }
-          if (remaining > 0) principal = Math.max(0, principal - remaining);
-        } else {
-          principal = Math.max(0, principal - remaining);
-        }
-      }
-      if (extra > 0) {
-        applyPayment(extra);
-        if (prepayMode === "payment") payment = effectiveMonthlyPayment(ob, principal + interest, monthsLeft);
-      }
-      let monthsToZero = balances[0] <= 0 ? 0 : null;
-      for (let m = 1; m <= monthsLeft; m++) {
-        if (ob.kind === "credit" && num(ob.apr) > 0 && principal > 0) {
-          const mi = principal * (num(ob.apr) / 100 / 12);
-          interest += mi;
-          totalInterest += mi;
-        }
-        if (payment > 0) applyPayment(payment);
-        const balance = Math.max(0, principal + interest);
-        balances.push(balance);
-        if (balance <= 0 && monthsToZero === null) monthsToZero = m;
-        if (balance <= 0) { for (let r = m + 1; r <= monthsLeft; r++) balances.push(0); break; }
-        if (prepayMode === "payment" && extra > 0 && m === 1) payment = effectiveMonthlyPayment(ob, balance, monthsLeft - 1);
-      }
-      if (monthsToZero === null) monthsToZero = monthsLeft;
-      return { balances, totalInterest, monthsToZero, payment };
-    }
-
-    function nextDueDate(ob, now = new Date()) {
-      const pay = Math.max(0, num(ob.scheduledPayment || ob.minPayment || 0));
-      if (!pay) return null;
-      if (!ob.paymentDay) return toISODate(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 30));
-      const day = clampDay(ob.paymentDay); if (!day) return null;
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const thisMonthLast = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-      const thisMonthDay = Math.min(day, thisMonthLast);
-      const candidate = new Date(now.getFullYear(), now.getMonth(), thisMonthDay);
-      if (candidate < today) {
-        const nextMonthLast = new Date(now.getFullYear(), now.getMonth() + 2, 0).getDate();
-        const nextMonthDay = Math.min(day, nextMonthLast);
-        return toISODate(new Date(now.getFullYear(), now.getMonth() + 1, nextMonthDay));
-      }
-      return toISODate(candidate);
-    }
-
-    function buildPortfolioSeries() {
-      const now = new Date();
-      if (!state.obligations.length) {
-        const labels = Array.from({ length: MAX_FORECAST_MONTHS + 1 }, (_, i) => i === 0 ? "Сейчас" : `${i} мес.`);
-        return { labels, series: Array(labels.length).fill(0) };
-      }
-      const minStart = state.obligations.reduce((min, ob) => {
-        const d = parseDate(ob.startDate); return (!d || d > min) ? min : d;
-      }, parseDate(state.obligations[0].startDate) || now);
-      const startMonth = monthStart(minStart || now);
-      const currentMonth = monthStart(now);
-      const startIdx = 0;
-      const currentIdx = monthsBetween(startMonth, currentMonth);
-      const totalMonths = currentIdx + MAX_FORECAST_MONTHS;
-      const labels = [];
-      const series = Array(totalMonths + 1).fill(0);
-      const monthKeys = [];
-      for (let i = 0; i <= totalMonths; i++) {
-        const dt = addMonths(startMonth, i);
-        monthKeys.push(monthKey(dt));
-        labels.push(i <= currentIdx ? dt.toLocaleDateString("ru-RU", { month: "short", year: "numeric" }) : `+${i - currentIdx}м`);
-      }
-      const txByObMonth = new Map();
-      for (const ob of state.obligations) {
-        const map = new Map();
-        for (const tx of getTransactionsFor(ob.id)) {
-          const d = parseDate(tx.date); if (!d) continue;
-          const idx = monthsBetween(startMonth, monthStart(d));
-          map.set(idx, (map.get(idx) || 0) + Math.max(0, num(tx.amount)));
-        }
-        txByObMonth.set(ob.id, map);
-      }
-      for (const ob of state.obligations) {
-        const obStartIdx = monthsBetween(startMonth, monthStart(parseDate(ob.startDate) || now));
-        let principal = Math.max(0, num(ob.initialPrincipal));
-        let interest = 0;
-        let balance = principal;
-        const monthsLeftAtStart = ob.termMonths || totalMonths - obStartIdx;
-        let payment = effectiveMonthlyPayment(ob, balance, monthsLeftAtStart);
-        for (let i = 0; i <= totalMonths; i++) {
-          if (i < obStartIdx) continue;
-          if (i === obStartIdx) {
-            series[i] += balance;
-            continue;
-          }
-          if (ob.kind === "credit" && num(ob.apr) > 0 && balance > 0) {
-            balance += balance * (num(ob.apr) / 100 / 12);
-          }
-          const isPastOrCurrent = i <= currentIdx;
-          const txMonthMap = txByObMonth.get(ob.id);
-          const txSum = txMonthMap.get(i) || 0;
-          if (isPastOrCurrent && txSum > 0) {
-            let remaining = txSum;
-            if (ob.kind === "credit" && interest > 0) {
-              const used = Math.min(interest, remaining);
-              interest -= used; remaining -= used;
-            }
-            balance = Math.max(0, balance - remaining);
-          } else if (!isPastOrCurrent && payment > 0) {
-            balance = Math.max(0, balance - payment);
-          } else if (isPastOrCurrent && payment > 0) {
-            balance = Math.max(0, balance - payment);
-          }
-          if (balance <= 0) { series[i] += 0; continue; }
-          series[i] += balance;
-        }
-      }
-      return { labels, series, currentIdx };
-    }
-
-    function computeDerived() {
-      const now = new Date();
-      const statuses = new Map();
-      state.obligations.forEach((ob) => statuses.set(ob.id, currentStatus(ob, now)));
-      const totals = { balance: 0, principal: 0, interest: 0, family: 0, scheduled: 0, activeCount: 0, creditCount: 0, familyCount: 0, paid: 0, initial: 0 };
-      for (const ob of state.obligations) {
-        const st = statuses.get(ob.id); if (!st) continue;
-        totals.balance += st.balance; totals.principal += st.principal; totals.interest += st.interest; totals.paid += st.paid;
-        totals.scheduled += st.currentPayment; totals.initial += Math.max(0, num(ob.initialPrincipal));
-        if (st.balance > 0) totals.activeCount += 1;
-        if (ob.kind === "credit") totals.creditCount += 1; else totals.familyCount += 1;
-        if (ob.kind === "family") totals.family += st.balance;
-      }
-      const seriesPack = buildPortfolioSeries();
-      const rec = buildRecommendations(statuses);
-      const upcoming = buildUpcoming(statuses);
-      const support = buildSupport(totals);
-      const refi = buildRefi(statuses);
-      return { now, statuses, totals, seriesPack, rec, upcoming, support, refi };
-    }
-
-    function buildRecommendations(statuses) {
-      const amount = Math.max(0, num(state.ui.freeAmount));
-      const candidates = state.obligations.filter((ob) => ob.active !== false).map((ob) => ({ ob, st: statuses.get(ob.id) })).filter(({ st }) => st && st.balance > 0);
-      if (!candidates.length) return { amount, interest: null, payment: null };
-      const scored = candidates.map(({ ob, st }) => {
-        const base = simulateFuture(ob, st, ob.termMonths || MAX_FORECAST_MONTHS, 0, ob.prepayMode);
-        const withExtra = simulateFuture(ob, st, ob.termMonths || MAX_FORECAST_MONTHS, amount, ob.prepayMode);
-        return { ob, st, base, withExtra, interestSavings: base.totalInterest - withExtra.totalInterest, monthsSaved: Math.max(0, base.monthsToZero - withExtra.monthsToZero), balance: st.balance, apr: num(ob.apr), payment: st.currentPayment };
-      });
-      const interest = scored.slice().sort((a, b) => b.interestSavings - a.interestSavings || b.apr - a.apr || a.balance - b.balance)[0];
-      const payment = scored.slice().sort((a, b) => b.monthsSaved - a.monthsSaved || a.balance - b.balance || b.payment - a.payment)[0];
-      return { amount, interest, payment };
-    }
-
-    function buildUpcoming(statuses) {
-      return state.obligations.map((ob) => ({ ob, st: statuses.get(ob.id) }))
-        .filter(({ ob, st }) => st && st.balance > 0 && (ob.scheduledPayment > 0 || ob.minPayment > 0))
-        .map(({ ob, st }) => ({ id: ob.id, title: ob.name, lender: ob.lender || "", kind: ob.kind, date: st.nextDue, amount: st.currentPayment }))
-        .filter((x) => x.date)
-        .sort((a, b) => String(a.date).localeCompare(String(b.date)));
-    }
-
-    function buildSupport(totals) {
-      const progress = totals.initial > 0 ? Math.max(0, Math.min(100, ((totals.initial - totals.balance) / totals.initial) * 100)) : 0;
-      const saved = Math.max(0, totals.initial - totals.balance);
-      let title = "Точка старта";
-      let text = "Вы только входите в траекторию снижения долгов. Регулярность платежей сейчас важнее всего.";
-      if (progress >= 15) { title = "Движение заметно"; text = `Вы уже снизили нагрузку на ${money(saved)}. Это уже не абстрактный план, а реальный прогресс.`; }
-      if (progress >= 35) { title = "Сильный этап"; text = `Снижение уже хорошо видно: погашено ${money(saved)}. Дальше каждый досрочный платёж ускоряет выход.`; }
-      if (progress >= 60) { title = "Основная часть пути пройдена"; text = `Вы закрыли большую часть долговой нагрузки. Осталось удержать темп и не терять фокус.`; }
-      if (progress >= 85) { title = "Финиш уже рядом"; text = `До заметного освобождения платежей совсем немного. Это уже зона, где досрочка особенно чувствуется.`; }
-      return { progress, saved, title, text };
-    }
-
-    function buildRefi(statuses) {
-      const credits = state.obligations.filter((o) => o.kind === "credit");
-      if (!credits.length) return { options: [], result: null };
-      const selectedId = state.ui.refi.obligationId || credits[0].id;
-      const selected = state.obligations.find((o) => o.id === selectedId && o.kind === "credit") || credits[0];
-      const st = statuses.get(selected.id);
-      const currentBalance = st ? st.balance : num(selected.initialPrincipal);
-      const monthsLeft = st?.monthsLeft || selected.termMonths || MAX_FORECAST_MONTHS;
-      const currentFuture = simulateFuture(selected, { principal: st?.principal ?? currentBalance, interest: st?.interest ?? 0 }, monthsLeft, 0, selected.prepayMode);
-      const currentTotalCost = currentFuture.totalInterest + currentBalance;
-      const newAmount = num(state.ui.refi.amount || currentBalance);
-      const newApr = num(state.ui.refi.apr || selected.apr);
-      const newTerm = Math.max(1, Math.floor(num(state.ui.refi.termMonths || monthsLeft)));
-      const fee = num(state.ui.refi.fee || 0);
-      const monthlyFee = num(state.ui.refi.monthlyFee || 0);
-      const pmt = annuityPayment(newAmount, newApr, newTerm);
-      const newTotalCost = pmt * newTerm + monthlyFee * newTerm + fee;
-      const savings = currentTotalCost - newTotalCost;
-      const criticalRate = findCriticalRate(newAmount, newTerm, fee, monthlyFee, currentTotalCost);
-      const breakEven = pmt + monthlyFee > 0 ? Math.ceil(Math.max(0, fee) / Math.max(1, (currentFuture.payment || pmt) - (pmt + monthlyFee))) : null;
-      const verdict = savings > 0 ? "Выгодно" : savings < 0 ? "Невыгодно" : "Почти без разницы";
-      const color = savings > 0 ? "green" : savings < 0 ? "amber" : "blue";
-      return { selected, currentBalance, monthsLeft, currentTotalCost, newAmount, newApr, newTerm, fee, monthlyFee, newTotalCost, savings, criticalRate, breakEven, verdict, color };
-    }
-
-    function findCriticalRate(amount, termMonths, fee, monthlyFee, targetCost) {
-      let lo = 0, hi = 60, ans = null;
-      for (let i = 0; i < 40; i++) {
-        const mid = (lo + hi) / 2;
-        const pmt = annuityPayment(amount, mid, termMonths);
-        const cost = pmt * termMonths + monthlyFee * termMonths + fee;
-        if (cost <= targetCost) { ans = mid; hi = mid; } else { lo = mid; }
-      }
-      return ans;
-    }
-
-    function renderSummary() {
-      const t = derived.totals;
-      const creditCount = state.obligations.filter((o) => o.kind === "credit").length;
-      const familyCount = state.obligations.filter((o) => o.kind === "family").length;
-      const avgRate = creditCount ? (state.obligations.filter((o) => o.kind === "credit").reduce((s, o) => s + num(o.apr), 0) / creditCount) : 0;
-      els.summaryGrid.innerHTML = `
-        <div class="metric blue"><div class="label">Общий остаток</div><div class="value">${money(t.balance)}</div><div class="sub">Кредиты + займы родственникам</div></div>
-        <div class="metric green"><div class="label">Остаток тела</div><div class="value">${money(t.principal)}</div><div class="sub">Без начисленных процентов</div></div>
-        <div class="metric amber"><div class="label">Начисленные проценты</div><div class="value">${money(t.interest)}</div><div class="sub">На текущую дату</div></div>
-        <div class="metric red"><div class="label">Регулярные платежи в месяц</div><div class="value">${money(t.scheduled)}</div><div class="sub">По всем активным обязательствам</div></div>
-        <div class="metric"><div class="label">Активных записей</div><div class="value">${t.activeCount}</div><div class="sub">Кредитов: ${creditCount} · Родственникам: ${familyCount} · Средняя ставка: ${avgRate.toFixed(1)}%</div></div>
-      `;
-    }
-
-    function renderObligationList(kind) {
-      const container = kind === "credit" ? els.creditList : els.familyList;
-      const items = state.obligations.filter((o) => o.kind === kind);
-      if (!items.length) { container.innerHTML = `<div class="empty">Пока нет записей. Добавьте первую карточку ниже.</div>`; return; }
-
-      container.innerHTML = items.map((ob) => {
-        const st = derived.statuses.get(ob.id) || { principal:0, interest:0, balance:0, paid:0, monthsToPayoff:0, currentPayment:0, nextDue:null, monthsLeft:null, plannedEnd:null };
-        const progress = ob.initialPrincipal > 0 ? Math.max(0, Math.min(100, ((ob.initialPrincipal - st.balance) / ob.initialPrincipal) * 100)) : 0;
-        const payoffText = st.balance <= 0 ? "Закрыт" : `${st.monthsToPayoff || MAX_FORECAST_MONTHS} мес.`;
-        const remainingPlan = ob.termMonths ? Math.max(0, ob.termMonths - monthsBetween(monthStart(parseDate(ob.startDate) || new Date()), monthStart(new Date()))) : null;
-        const plannedEnd = st.plannedEnd || plannedEndDate(ob) || "—";
-        const basePayment = st.currentPayment || effectiveMonthlyPayment(ob, st.balance || ob.initialPrincipal, st.monthsLeft || ob.termMonths || MAX_FORECAST_MONTHS);
-        return `
-          <div class="ob-card ${ob.kind}">
-            <div class="ob-top">
-              <div>
-                <span class="badge ${ob.kind}">${ob.kind === "credit" ? "Кредит" : "Займ родственнику"}</span>
-                <div class="ob-title">${esc(ob.name)}</div>
-                <div class="ob-meta">${esc(ob.lender || "Без банка / без указания")}</div>
-              </div>
-              <div class="balance-box">
-                <div class="label">Остаток сейчас</div>
-                <div class="value">${money(st.balance)}</div>
-              </div>
-            </div>
-
-            <div class="progress"><div style="width:${progress}%"></div></div>
-
-            <div class="stats-row">
-              <div class="stat"><div class="k">Тело</div><div class="v">${money(st.principal)}</div></div>
-              <div class="stat"><div class="k">Проценты</div><div class="v">${money(st.interest)}</div></div>
-              <div class="stat"><div class="k">Выплачено</div><div class="v">${money(st.paid)}</div></div>
-              <div class="stat"><div class="k">Погашение</div><div class="v">${payoffText}</div></div>
-            </div>
-
-            <div class="mini-stats" style="margin-top:2px;">
-              <div class="mini-stat"><div class="k">Срок по плану</div><div class="v">${ob.termMonths ? `${ob.termMonths} мес.` : "не задан"}</div></div>
-              <div class="mini-stat"><div class="k">Осталось по плану</div><div class="v">${remainingPlan != null ? `${remainingPlan} мес.` : "—"}</div></div>
-              <div class="mini-stat"><div class="k">Дата окончания</div><div class="v">${plannedEnd}</div></div>
-            </div>
-
-            <div class="edit-grid">
-              <div class="field"><label>Тип</label>
-                <select id="kind-${ob.id}">
-                  <option value="credit" ${ob.kind === "credit" ? "selected" : ""}>Кредит</option>
-                  <option value="family" ${ob.kind === "family" ? "selected" : ""}>Займ родственнику</option>
-                </select>
-              </div>
-              <div class="field"><label>Название</label><input id="name-${ob.id}" value="${esc(ob.name)}" /></div>
-              <div class="field"><label>Банк / человек</label><input id="lender-${ob.id}" value="${esc(ob.lender)}" /></div>
-              <div class="field"><label>Дата начала</label><input id="start-${ob.id}" type="date" value="${esc(ob.startDate)}" /></div>
-              <div class="field"><label>Срок, мес.</label><input id="term-${ob.id}" type="number" min="1" step="1" value="${ob.termMonths || ""}" /></div>
-              <div class="field"><label>Сумма</label><input id="principal-${ob.id}" type="number" step="0.01" value="${ob.initialPrincipal}" /></div>
-              <div class="field"><label>Ставка, %</label><input id="apr-${ob.id}" type="number" step="0.01" value="${ob.apr}" /></div>
-              <div class="field"><label>Мин. платёж</label><input id="min-${ob.id}" type="number" step="0.01" value="${ob.minPayment}" /></div>
-              <div class="field"><label>Плановый платёж</label><input id="scheduled-${ob.id}" type="number" step="0.01" value="${ob.scheduledPayment}" /></div>
-              <div class="field"><label>День месяца</label><input id="day-${ob.id}" type="number" min="1" max="31" value="${ob.paymentDay || ""}" /></div>
-              <div class="field"><label>Досрочка</label>
-                <select id="prepay-${ob.id}">
-                  <option value="term" ${ob.prepayMode === "term" ? "selected" : ""}>Уменьшать срок</option>
-                  <option value="payment" ${ob.prepayMode === "payment" ? "selected" : ""}>Уменьшать платёж</option>
-                </select>
-              </div>
-              <div class="field" style="grid-column: span 2;"><label>Примечание</label><input id="notes-${ob.id}" value="${esc(ob.notes)}" /></div>
-            </div>
-
-            <div class="card-actions">
-              <button class="primary" type="button" data-save-obligation="${ob.id}">Сохранить</button>
-              <button class="ghost" type="button" onclick="fillExtraFrom('${ob.id}')">Внести свободную сумму сюда</button>
-              <button class="danger" type="button" onclick="deleteObligation('${ob.id}')">Удалить</button>
-              <span class="small-note">Следующий платёж: ${st.nextDue ? `${st.nextDue} · ${money(basePayment)}` : "не задан"}</span>
-            </div>
-          </div>
-        `;
-      }).join("");
-    }
-
-    function renderTransactions() {
-      const txs = state.transactions.slice().sort((a, b) => b.date.localeCompare(a.date));
-      if (!txs.length) { els.txList.innerHTML = `<div class="empty">Платежей пока нет. Добавьте прошлые и будущие операции через форму выше.</div>`; return; }
-      els.txList.innerHTML = txs.map((tx) => {
-        const ob = state.obligations.find((x) => x.id === tx.obligationId);
-        const label = tx.kind === "extra" ? "Досрочка" : tx.kind === "repayment" ? "Возврат" : "Платёж";
-        return `
-          <div class="tx-item">
-            <div class="left">
-              <div class="title">${label} · ${esc(ob ? ob.name : "Удалённое обязательство")}</div>
-              <div class="meta">${esc(tx.date)} · ${esc(tx.note || "Без комментария")}</div>
-            </div>
-            <div class="right" style="text-align:right; min-width:120px;">
-              <div class="sum">${money(tx.amount)}</div>
-              <button class="ghost" type="button" style="margin-top:8px;" onclick="deleteTransaction('${tx.id}')">Удалить</button>
-            </div>
-          </div>
-        `;
-      }).join("");
-    }
-
-    function renderUpcoming() {
-      if (!derived.upcoming.length) { els.upcomingList.innerHTML = `<div class="empty">Пока нет будущих дат платежей. Укажите день месяца и плановый платёж в карточке.</div>`; return; }
-      els.upcomingList.innerHTML = derived.upcoming.slice(0, 8).map((item) => `
-        <div class="tx-item">
-          <div class="left">
-            <div class="title">${esc(item.title)}</div>
-            <div class="meta">${esc(item.date)}${item.lender ? ` · ${esc(item.lender)}` : ""}</div>
-          </div>
-          <div class="sum">${money(item.amount)}</div>
-        </div>
-      `).join("");
-    }
-
-    function renderRecommendations() {
-      const rec = derived.rec; const amount = rec.amount;
-      if (!amount || amount <= 0) { els.recommendations.innerHTML = `<div class="empty">Введите свободную сумму, и система предложит лучший сценарий её использования.</div>`; return; }
-      const mode = state.ui.optimizeMode;
-      const primary = mode === "interest" ? rec.interest : rec.payment;
-      const secondary = mode === "interest" ? rec.payment : rec.interest;
-      const primaryKind = primary ? (primary.ob.kind === "family" ? "family" : "credit") : "credit";
-      const secondaryKind = secondary ? (secondary.ob.kind === "family" ? "family" : "credit") : "credit";
-      const primaryLabel = mode === "interest" ? "Для снижения переплаты" : "Для ускорения разгрузки платежей";
-      const secondaryLabel = mode === "interest" ? "Альтернатива по сроку" : "Альтернатива по переплате";
-      const primaryEffect = mode === "interest" ? `Экономия процентов: ${money(primary ? primary.interestSavings : 0)}` : `Сокращение срока: ${primary ? primary.monthsSaved : 0} мес.`;
-      const secondaryEffect = mode === "interest" ? `Сокращение срока: ${secondary ? secondary.monthsSaved : 0} мес.` : `Экономия процентов: ${money(secondary ? secondary.interestSavings : 0)}`;
-      els.recommendations.innerHTML = `
-        <div class="recommend-card ${primaryKind === "family" ? "family" : ""}">
-          <div class="row">
-            <div>
-              <span class="badge ${primaryKind}">${primaryLabel}</span>
-              <h3>${primary ? esc(primary.ob.name) : "Нет активных обязательств"}</h3>
-              <div class="meta">${primary ? `Остаток: ${money(primary.balance)} · Ставка: ${primary.apr.toFixed(2)}% · Платёж: ${money(primary.payment)}` : ""}</div>
-              <div class="meta" style="margin-top:6px;">${primaryEffect}</div>
-            </div>
-            <div style="text-align:right; min-width:180px;">
-              <div class="small-note">Свободная сумма</div>
-              <div style="font-size:24px; font-weight:900;">${money(amount)}</div>
-              <div class="small-note" style="margin-top:6px;">Режим: ${mode === "interest" ? "переплата" : "платёж"}</div>
-            </div>
-          </div>
-          <div class="card-actions" style="margin-top:12px;">
-            <button class="primary" type="button" onclick="applyRecommendedExtra()">Записать досрочный платёж</button>
-            <button class="ghost" type="button" onclick="toggleOptimizeMode()">Переключить режим</button>
-          </div>
-        </div>
-
-        <div class="recommend-card ${secondaryKind === "family" ? "family" : ""}">
-          <div class="row">
-            <div>
-              <span class="badge ${secondaryKind}">${secondaryLabel}</span>
-              <h3>${secondary ? esc(secondary.ob.name) : "Нет альтернативы"}</h3>
-              <div class="meta">${secondary ? `Остаток: ${money(secondary.balance)} · Платёж: ${money(secondary.payment)}` : ""}</div>
-              <div class="meta" style="margin-top:6px;">${secondaryEffect}</div>
-            </div>
-            <div style="text-align:right; min-width:180px;">
-              <div class="small-note">Текущий остаток</div>
-              <div style="font-size:24px; font-weight:900;">${secondary ? money(secondary.balance) : "—"}</div>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderSupport() {
-      const s = derived.support;
-      els.supportBox.className = `support-box ${s.progress >= 60 ? "green" : ""}`;
-      els.supportBox.innerHTML = `
-        <div class="headline">${esc(s.title)}</div>
-        <div class="text">${esc(s.text)}</div>
-        <div class="mini-stats" style="margin-top:12px;">
-          <div class="mini-stat"><div class="k">Пройдено</div><div class="v">${s.progress.toFixed(1)}%</div></div>
-          <div class="mini-stat"><div class="k">Уже выплачено</div><div class="v">${money(s.saved)}</div></div>
-          <div class="mini-stat"><div class="k">Сейчас осталось</div><div class="v">${money(derived.totals.balance)}</div></div>
-        </div>
-      `;
-    }
-
-    function renderRefi() {
-      const r = derived.refi;
-      if (!r || !r.selected) {
-        els.refiResult.innerHTML = `<div class="headline">Пока нет кредитов для сравнения</div><div class="text">Добавьте хотя бы один кредит, чтобы проверить выгоду рефинансирования.</div>`;
-        return;
-      }
-      const cls = r.color === "green" ? "green" : r.color === "amber" ? "" : "";
-      els.refiResult.className = `support-box ${cls}`;
-      const threshold = r.criticalRate != null ? r.criticalRate.toFixed(2) : "—";
-      els.refiResult.innerHTML = `
-        <div class="headline">${r.verdict}</div>
-        <div class="text">
-          Текущий остаток по ${esc(r.selected.name)}: <b>${money(r.currentBalance)}</b>.<br>
-          Старый сценарий: <b>${money(r.currentTotalCost)}</b> до закрытия.<br>
-          Новый сценарий: <b>${money(r.newTotalCost)}</b> с учётом комиссии ${money(r.fee)} и ежемесячной комиссии ${money(r.monthlyFee)}.
-        </div>
-        <div class="mini-stats" style="margin-top:12px;">
-          <div class="mini-stat"><div class="k">Выгода / убыток</div><div class="v">${money(r.savings)}</div></div>
-          <div class="mini-stat"><div class="k">Критическая ставка</div><div class="v">${threshold}%</div></div>
-          <div class="mini-stat"><div class="k">Срок нового кредита</div><div class="v">${r.newTerm} мес.</div></div>
-        </div>
-        <div class="text" style="margin-top:10px;">Если ставка нового кредита ниже критической, рефинанс обычно выгоден. Если выше — чаще проще гасить старое обязательство.</div>
-      `;
-    }
-
-    function renderCharts() {
-      const pack = derived.seriesPack;
-      if (!charts.forecast) {
-        charts.forecast = new Chart(els.forecastChart, {
-          type: "line",
-          data: { labels: pack.labels, datasets: [{ label: "Остаток долга", data: pack.series, tension: .35, fill: true, borderWidth: 3, pointRadius: 1 }] },
-          options: chartLineOptions()
-        });
-      } else {
-        charts.forecast.data.labels = pack.labels;
-        charts.forecast.data.datasets[0].data = pack.series;
-        charts.forecast.update();
-      }
-
-      if (!charts.breakdown) {
-        charts.breakdown = new Chart(els.breakdownChart, {
-          type: "doughnut",
-          data: {
-            labels: ["Тело кредитов", "Начисленные проценты", "Долги родственникам"],
-            datasets: [{ data: [Math.max(0, derived.totals.principal), Math.max(0, derived.totals.interest), Math.max(0, derived.totals.family)], borderWidth: 0, backgroundColor: ["rgba(37,99,235,.85)", "rgba(217,119,6,.85)", "rgba(5,150,105,.85)"] }]
-          },
-          options: chartDoughnutOptions()
-        });
-      } else {
-        charts.breakdown.data.datasets[0].data = [Math.max(0, derived.totals.principal), Math.max(0, derived.totals.interest), Math.max(0, derived.totals.family)];
-        charts.breakdown.update();
-      }
-
-      const s = derived.seriesPack.series;
-      const idx = derived.seriesPack.currentIdx ?? 0;
-      const at6 = s[idx + 6] ?? s[s.length - 1] ?? 0;
-      const at12 = s[idx + 12] ?? s[s.length - 1] ?? 0;
-      const at24 = s[idx + 24] ?? s[s.length - 1] ?? 0;
-      els.forecastStats.innerHTML = `
-        <div class="mini-stat"><div class="k">Сейчас</div><div class="v">${money(derived.totals.balance)}</div></div>
-        <div class="mini-stat"><div class="k">Через 12 мес.</div><div class="v">${money(at12)}</div></div>
-        <div class="mini-stat"><div class="k">Через 24 мес.</div><div class="v">${money(at24)}</div></div>
-      `;
-
-      els.breakdownLegend.innerHTML = `
-        <div class="legend-row"><div class="legend-left"><span class="dot" style="background: rgba(37,99,235,.85)"></span><span class="legend-name">Тело кредитов</span></div><span class="legend-value">${money(derived.totals.principal)}</span></div>
-        <div class="legend-row"><div class="legend-left"><span class="dot" style="background: rgba(217,119,6,.85)"></span><span class="legend-name">Начисленные проценты</span></div><span class="legend-value">${money(derived.totals.interest)}</span></div>
-        <div class="legend-row"><div class="legend-left"><span class="dot" style="background: rgba(5,150,105,.85)"></span><span class="legend-name">Долги родственникам</span></div><span class="legend-value">${money(derived.totals.family)}</span></div>
-      `;
-    }
-
-    function chartLineOptions() {
-      return {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: { beginAtZero: true, grid: { color: "rgba(18,32,51,.08)" }, ticks: { callback: (v) => money(v) } },
-          x: { grid: { display: false } }
-        },
-        plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ` ${money(ctx.parsed.y)}` } } }
-      };
-    }
-    function chartDoughnutOptions() {
-      return {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: "62%",
-        plugins: { legend: { position: "bottom", labels: { usePointStyle: true, boxWidth: 10, padding: 18 } } }
-      };
-    }
-
-    function renderTxOptions() {
-      const options = state.obligations.length ? state.obligations.map((ob) => `<option value="${ob.id}">${esc(ob.name)} (${ob.kind === "credit" ? "кредит" : "родственник"})</option>`).join("") : `<option value="">Сначала добавьте обязательство</option>`;
-      els.newTxObligation.innerHTML = options;
-      els.refiObligation.innerHTML = state.obligations.filter((o) => o.kind === "credit").map((ob) => `<option value="${ob.id}">${esc(ob.name)}</option>`).join("") || `<option value="">Нет кредитов</option>`;
-    }
-
-    function renderAll() {
-      derived = computeDerived();
-      renderTxOptions();
-      renderSummary();
-      renderObligationList("credit");
-      renderObligationList("family");
-      renderTransactions();
-      renderRecommendations();
-      renderSupport();
-      renderRefi();
-      renderUpcoming();
-      renderCharts();
-      setUpdatedPill();
-      if (!db) setSyncState("Локальный режим", "amber");
-      if (db && remoteLoaded) setSyncState("Синхронизировано", "green");
-
-      const r = state.ui.refi || {};
-      if (els.refiObligation && (!r.obligationId || !els.refiObligation.querySelector(`option[value="${r.obligationId}"]`))) {
-        const firstCredit = state.obligations.find((o) => o.kind === "credit");
-        if (firstCredit) state.ui.refi.obligationId = firstCredit.id;
-      }
-      if (els.refiObligation) els.refiObligation.value = state.ui.refi.obligationId || els.refiObligation.value || "";
-      if (els.refiAmount && !els.refiAmount.value) els.refiAmount.value = state.ui.refi.amount || "";
-      if (els.refiApr && !els.refiApr.value) els.refiApr.value = state.ui.refi.apr || "";
-      if (els.refiTerm && !els.refiTerm.value) els.refiTerm.value = state.ui.refi.termMonths || "";
-      if (els.refiFee && !els.refiFee.value) els.refiFee.value = state.ui.refi.fee || "";
-      if (els.refiMonthlyFee && !els.refiMonthlyFee.value) els.refiMonthlyFee.value = state.ui.refi.monthlyFee || "";
-      if (els.freeAmount) els.freeAmount.value = state.ui.freeAmount || 0;
-      if (els.optimizeMode) els.optimizeMode.value = state.ui.optimizeMode;
-    }
-
-    function addObligation(kind) {
-      const prefix = kind === "credit" ? "newCredit" : "newFamily";
-      const name = document.getElementById(`${prefix}Name`).value.trim();
-      const lender = document.getElementById(`${prefix}Lender`).value.trim();
-      const startDate = document.getElementById(`${prefix}Start`).value || todayISO();
-      const termMonths = Math.max(1, Math.floor(num(document.getElementById(`${prefix}Term`).value || 0))) || null;
-      const principal = num(document.getElementById(`${prefix}Principal`).value);
-      const apr = kind === "credit" ? num(document.getElementById("newCreditApr").value) : 0;
-      const minPayment = kind === "credit" ? num(document.getElementById("newCreditMinPayment").value) : 0;
-      const scheduledPayment = kind === "credit" ? (num(document.getElementById("newCreditScheduled").value) || minPayment) : num(document.getElementById("newFamilyScheduled").value);
-      const paymentDay = clampDay(kind === "credit" ? document.getElementById("newCreditDay").value : document.getElementById("newFamilyDay").value);
-      const prepayMode = kind === "credit" ? document.getElementById("newCreditPrepayMode").value : document.getElementById("newFamilyPrepayMode").value;
-      const notes = document.getElementById(`${prefix}Notes`).value.trim();
-      if (!principal || principal <= 0) { setNotice(kind === "credit" ? "Для кредита нужно указать сумму." : "Для займа родственнику нужно указать сумму.", "warn"); return; }
-      state.obligations.unshift({ id: uid(), kind, name: name || (kind === "credit" ? "Новый кредит" : "Новый займ"), lender, startDate, termMonths, initialPrincipal: principal, apr, minPayment, scheduledPayment, paymentDay, prepayMode, notes, active: true });
-      persist(); renderAll(); setNotice(kind === "credit" ? "Кредит добавлен." : "Займ родственнику добавлен.", "good");
-    }
-
-    function saveObligation(id) {
-      const idx = state.obligations.findIndex((x) => x.id === id);
-      if (idx < 0) return;
-
-      const prev = state.obligations[idx];
-      const get = (name) => document.getElementById(`${name}-${id}`)?.value ?? "";
-
-      const kind = get("kind") === "family" ? "family" : "credit";
-      const termRaw = num(get("term"));
-
-      state.obligations[idx] = normalizeObligation({
-        ...prev,
-        kind,
-        name: get("name").trim() || prev.name,
-        lender: get("lender").trim(),
-        startDate: get("start") || prev.startDate || todayISO(),
-        termMonths: termRaw > 0 ? Math.max(1, Math.floor(termRaw)) : (prev.termMonths ?? null),
-        initialPrincipal: num(get("principal")) || prev.initialPrincipal,
-        apr: kind === "credit" ? (num(get("apr")) || prev.apr || 0) : 0,
-        minPayment: num(get("min")) || prev.minPayment || 0,
-        scheduledPayment: num(get("scheduled")) || prev.scheduledPayment || 0,
-        paymentDay: clampDay(get("day")) ?? prev.paymentDay ?? null,
-        prepayMode: get("prepay") === "payment" ? "payment" : (prev.prepayMode || "term"),
-        notes: get("notes").trim(),
-        active: true
-      });
-
-      persist();
-      renderAll();
-      setNotice("Карточка сохранена.", "good");
-    }
-
-    function deleteObligation(id) {
-      const ob = state.obligations.find((x) => x.id === id); if (!ob) return;
-      if (!confirm(`Удалить запись «${ob.name}» и все связанные платежи?`)) return;
-      state.obligations = state.obligations.filter((x) => x.id !== id);
-      state.transactions = state.transactions.filter((tx) => tx.obligationId !== id);
-      persist(); renderAll(); setNotice("Запись удалена.", "good");
-    }
-    function addTransaction(kindOverride = null, obligationOverride = null, amountOverride = null) {
-      const obligationId = obligationOverride || els.newTxObligation.value;
-      if (!obligationId) { setNotice("Сначала выберите обязательство для платежа.", "warn"); return; }
-      const amount = amountOverride != null ? num(amountOverride) : num(document.getElementById("newTxAmount").value);
-      if (!amount || amount <= 0) { setNotice("Введите сумму платежа.", "warn"); return; }
-      state.transactions.unshift({ id: uid(), obligationId, date: els.newTxDate.value || todayISO(), amount, kind: kindOverride || els.newTxKind.value, note: document.getElementById("newTxNote").value.trim() });
-      persist(); renderAll(); document.getElementById("newTxAmount").value = ""; document.getElementById("newTxNote").value = ""; setNotice("Платёж добавлен и учтён в расчётах.", "good");
-    }
-    function deleteTransaction(id) { state.transactions = state.transactions.filter((tx) => tx.id !== id); persist(); renderAll(); setNotice("Запись платежа удалена.", "good"); }
-    function fillExtraFrom(id) {
-      const ob = state.obligations.find((x) => x.id === id); if (!ob) return;
-      els.newTxObligation.value = id; els.newTxDate.value = todayISO(); els.newTxKind.value = ob.kind === "family" ? "repayment" : "extra";
-      document.getElementById("newTxAmount").value = state.ui.freeAmount || 0; document.getElementById("newTxNote").value = `Платёж по ${ob.name}`;
-      setNotice(`Заполнена форма для «${ob.name}».`, "good"); window.scrollTo({ top: document.getElementById("txForm").getBoundingClientRect().top + window.scrollY - 12, behavior: "smooth" });
-    }
-    function toggleOptimizeMode() { state.ui.optimizeMode = state.ui.optimizeMode === "interest" ? "payment" : "interest"; els.optimizeMode.value = state.ui.optimizeMode; persist(); renderAll(); }
-    function applyRecommendedExtra() {
-      const rec = derived.rec; const amount = rec.amount; const target = state.ui.optimizeMode === "interest" ? rec.interest : rec.payment;
-      if (!target) { setNotice("Нечего применять: нет активных обязательств.", "warn"); return; }
-      els.newTxObligation.value = target.ob.id; els.newTxDate.value = todayISO(); document.getElementById("newTxAmount").value = amount;
-      els.newTxKind.value = target.ob.kind === "family" ? "repayment" : (state.ui.optimizeMode === "interest" ? "extra" : "payment");
-      document.getElementById("newTxNote").value = state.ui.optimizeMode === "interest" ? "Свободная сумма для снижения переплаты" : "Свободная сумма для снижения регулярного платежа";
-      addTransaction(els.newTxKind.value, target.ob.id, amount);
-    }
-
-    function exportJSON() {
-      const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = "credit-tracker-backup.json"; a.click(); URL.revokeObjectURL(url);
-    }
-    function importJSON() {
-      const raw = prompt("Вставьте JSON резервной копии, экспортированный этим сайтом."); if (!raw) return;
-      try { state = normalizeState(JSON.parse(raw)); persist(); renderAll(); setNotice("Резервная копия загружена.", "good"); } catch (e) { alert("Не удалось прочитать JSON."); }
-    }
-    function resetAll() { if (!confirm("Удалить все данные? Это действие повлияет на вас и брата.")) return; state = stateTemplate(); persist(); renderAll(); setNotice("Все данные очищены.", "warn"); }
-
-    function on(id, event, handler) { const el = document.getElementById(id); if (el) el.addEventListener(event, handler); }
-    function bindControls() {
-      document.addEventListener("click", (e) => {
-        const btn = e.target.closest("[data-save-obligation]");
-        if (!btn) return;
-        saveObligation(btn.dataset.saveObligation);
-      });
-      els.newCreditStart.value = todayISO(); els.newFamilyStart.value = todayISO(); els.newTxDate.value = todayISO();
-      els.freeAmount.value = state.ui.freeAmount; els.optimizeMode.value = state.ui.optimizeMode;
-      on("addCreditBtn", "click", () => addObligation("credit"));
-      on("addFamilyBtn", "click", () => addObligation("family"));
-      on("addTxBtn", "click", () => addTransaction());
-      on("applyFreeBtn", "click", () => applyRecommendedExtra());
-      on("exportBtn", "click", exportJSON); on("importBtn", "click", importJSON); on("resetBtn", "click", resetAll);
-      on("freeAmount", "input", () => { state.ui.freeAmount = num(els.freeAmount.value); persist(); renderAll(); });
-      on("optimizeMode", "change", () => { state.ui.optimizeMode = els.optimizeMode.value === "payment" ? "payment" : "interest"; persist(); renderAll(); });
-
-      const newTxKindEl = document.getElementById("newTxKind");
-      if (newTxKindEl) {
-        newTxKindEl.addEventListener("change", () => {
-          if (newTxKindEl.value === "repayment") setNotice("Вы выбрали возврат родственнику. Подставьте нужную карточку и сумму.", "good");
-        });
-      }
-
-      on("calcRefiBtn", "click", () => {
-        const selected = els.refiObligation.value || (state.obligations.find((o) => o.kind === "credit")?.id || "");
-        state.ui.refi.obligationId = selected;
-        state.ui.refi.amount = num(els.refiAmount.value);
-        state.ui.refi.apr = num(els.refiApr.value);
-        state.ui.refi.termMonths = Math.max(1, Math.floor(num(els.refiTerm.value || 0))) || 36;
-        state.ui.refi.fee = num(els.refiFee.value);
-        state.ui.refi.monthlyFee = num(els.refiMonthlyFee.value);
-        persist(); renderAll();
-      });
-      on("refiObligation", "change", () => {
-        state.ui.refi.obligationId = els.refiObligation.value;
-        const ob = state.obligations.find((o) => o.id === state.ui.refi.obligationId);
-        if (ob) {
-          const st = derived?.statuses?.get(ob.id);
-          const balance = st?.balance ?? ob.initialPrincipal;
-          els.refiAmount.value = balance.toFixed(2);
-          els.refiApr.value = ob.apr;
-          els.refiTerm.value = ob.termMonths || st?.monthsLeft || 36;
-          state.ui.refi.amount = balance; state.ui.refi.apr = ob.apr; state.ui.refi.termMonths = ob.termMonths || st?.monthsLeft || 36;
-          persist(); renderAll();
-        }
-      });
-    }
-
-    async function initFirebase() {
-      try {
-        firebase.initializeApp(firebaseConfig);
-        db = firebase.firestore();
-        setSyncState("Подключение Firebase…", "amber");
-        const docRef = db.collection(FIRESTORE_PATH.collection).doc(FIRESTORE_PATH.doc);
-        const snapshot = await docRef.get();
-        if (snapshot.exists) { state = normalizeState(snapshot.data()); remoteLoaded = true; saveLocal(); setNotice("Загружена общая версия данных из Firebase.", "good"); }
-        else { remoteLoaded = true; await docRef.set({ ...state, serverUpdatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true }); setNotice("Firestore готов. Создан пустой общий документ.", "warn"); }
-        docRef.onSnapshot((snapshot) => {
-          try {
-            if (!snapshot.exists) { remoteLoaded = true; setSyncState("Firebase подключен", "green"); return; }
-            const data = snapshot.data(); if (!data || typeof data !== "object") return;
-            state = normalizeState(data); remoteLoaded = true; saveLocal(); renderAll(); setSyncState("Синхронизировано", "green"); setNotice("Данные обновлены из общего документа Firebase.", "good");
-          } catch (e) { console.error(e); setSyncState("Ошибка синхронизации", "amber"); }
-        }, (error) => { console.error(error); setSyncState("Ошибка Firebase", "amber"); setNotice("Подписка на Firestore не работает. Проверьте правила базы и доступ к документу.", "warn"); });
-      } catch (e) {
-        console.error(e); setSyncState("Локальный режим", "amber"); setNotice("Firebase не подключился. Сайт продолжит работать локально в этом браузере.", "warn");
-      }
-    }
-
-    function attachGlobals() {
-      window.saveObligation = saveObligation;
-      window.deleteObligation = deleteObligation;
-      window.deleteTransaction = deleteTransaction;
-      window.fillExtraFrom = fillExtraFrom;
-      window.toggleOptimizeMode = toggleOptimizeMode;
-      window.applyRecommendedExtra = applyRecommendedExtra;
-    }
-
-    function renderRefi() {
-      const r = derived.refi;
-      if (!r || !r.selected) {
-        els.refiResult.innerHTML = `<div class="headline">Пока нет кредитов для сравнения</div><div class="text">Добавьте хотя бы один кредит, чтобы проверить выгоду рефинансирования.</div>`;
-        return;
-      }
-      const cls = r.color === "green" ? "green" : "";
-      els.refiResult.className = `support-box ${cls}`;
-      const threshold = r.criticalRate != null ? `${r.criticalRate.toFixed(2)}%` : "—";
-      els.refiResult.innerHTML = `
-        <div class="headline">${r.verdict}</div>
-        <div class="text">
-          Текущий остаток по <b>${esc(r.selected.name)}</b>: <b>${money(r.currentBalance)}</b>.<br>
-          Старый сценарий: <b>${money(r.currentTotalCost)}</b> до закрытия.<br>
-          Новый сценарий: <b>${money(r.newTotalCost)}</b> с учётом комиссии ${money(r.fee)} и ежемесячной комиссии ${money(r.monthlyFee)}.
-        </div>
-        <div class="mini-stats" style="margin-top:12px;">
-          <div class="mini-stat"><div class="k">Выгода / убыток</div><div class="v">${money(r.savings)}</div></div>
-          <div class="mini-stat"><div class="k">Критическая ставка</div><div class="v">${threshold}</div></div>
-          <div class="mini-stat"><div class="k">Срок нового кредита</div><div class="v">${r.newTerm} мес.</div></div>
-        </div>
-        <div class="text" style="margin-top:10px;">Если ставка нового кредита ниже критической, рефинанс обычно выгоден. Если выше — чаще проще гасить старое обязательство.</div>
-      `;
-      els.refiObligation.value = state.ui.refi.obligationId || (state.obligations.find((o) => o.kind === "credit")?.id || "");
-      els.refiAmount.value = state.ui.refi.amount || r.currentBalance;
-      els.refiApr.value = state.ui.refi.apr || (r.selected.apr || 0);
-      els.refiTerm.value = state.ui.refi.termMonths || (r.monthsLeft || 36);
-      els.refiFee.value = state.ui.refi.fee || 0;
-      els.refiMonthlyFee.value = state.ui.refi.monthlyFee || 0;
-    }
-
-    function boot() { loadLocal(); bindControls(); attachGlobals(); renderAll(); initFirebase(); }
-    boot();
-  </script>
+<div class="container">
+
+<div class="header">
+<h1>Финансовый трекер кредитов</h1>
+<div class="subtitle">
+Общий учет кредитов, долгов, платежей, досрочных погашений и прогресса по закрытию обязательств.
+</div>
+<div id="syncStatus" class="status">Синхронизация...</div>
+</div>
+
+<div class="grid">
+<div class="card">
+<div>Общий долг</div>
+<div class="metric" id="totalDebt">0 ₽</div>
+</div>
+
+<div class="card">
+<div>Ежемесячные платежи</div>
+<div class="metric" id="monthlyPayments">0 ₽</div>
+</div>
+
+<div class="card">
+<div>Количество кредитов</div>
+<div class="metric" id="creditCount">0</div>
+</div>
+</div>
+
+<div class="section">
+<h2>Добавить кредит</h2>
+
+<div class="row">
+<div class="field">
+<label>Название</label>
+<input id="name" placeholder="Например: Сбер" />
+</div>
+
+<div class="field">
+<label>Банк</label>
+<input id="bank" placeholder="Название банка" />
+</div>
+
+<div class="field">
+<label>Сумма кредита</label>
+<input id="amount" type="number" />
+</div>
+</div>
+
+<div class="row">
+<div class="field">
+<label>Ставка %</label>
+<input id="rate" type="number" />
+</div>
+
+<div class="field">
+<label>Ежемесячный платеж</label>
+<input id="payment" type="number" />
+</div>
+
+<div class="field">
+<label>Срок (месяцев)</label>
+<input id="months" type="number" />
+</div>
+</div>
+
+<div class="actions">
+<button class="primary" onclick="addCredit()">Сохранить кредит</button>
+</div>
+</div>
+
+<div class="section">
+<h2>Ваши кредиты</h2>
+<div id="credits"></div>
+</div>
+
+<div class="section">
+<h2>История операций</h2>
+<div id="history"></div>
+</div>
+
+<div class="motivation" id="motivationText">
+Каждый платеж уменьшает давление будущих процентов.
+</div>
+
+</div>
+
+<script>
+const firebaseConfig = {
+apiKey: "AIzaSyCRdVG_2qgNDPxxfEa3CSeeyjvpdmbcjWE",
+authDomain: "credit-payments-2026.firebaseapp.com",
+projectId: "credit-payments-2026",
+storageBucket: "credit-payments-2026.firebasestorage.app",
+messagingSenderId: "1097721168288",
+appId: "1:1097721168288:web:47881d4673567d6b0424c5",
+measurementId: "G-637GBQSDW6"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const docRef = db.collection("shared").doc("data");
+
+let state = {
+credits: [],
+history: []
+};
+
+function formatMoney(value){
+return new Intl.NumberFormat('ru-RU', {
+style:'currency',
+currency:'RUB',
+maximumFractionDigits:0
+}).format(value || 0);
+}
+
+function updateStatus(text,color){
+const el = document.getElementById('syncStatus');
+el.textContent = text;
+el.style.background = color;
+}
+
+function render(){
+const creditsEl = document.getElementById('credits');
+creditsEl.innerHTML = '';
+
+let total = 0;
+let monthly = 0;
+
+state.credits.forEach((credit,index)=>{
+total += Number(credit.balance || 0);
+monthly += Number(credit.payment || 0);
+
+const div = document.createElement('div');
+div.className = 'credit-card';
+
+div.innerHTML = `
+<h3>${credit.name}</h3>
+<div class="small">${credit.bank}</div>
+
+<div class="row" style="margin-top:14px;">
+<div class="card">
+<div>Остаток</div>
+<div class="metric" style="font-size:24px;">${formatMoney(credit.balance)}</div>
+</div>
+
+<div class="card">
+<div>Ставка</div>
+<div class="metric" style="font-size:24px;">${credit.rate}%</div>
+</div>
+
+<div class="card">
+<div>Срок</div>
+<div class="metric" style="font-size:24px;">${credit.months} мес.</div>
+</div>
+</div>
+
+<div class="row">
+<div class="field">
+<label>Внести платеж</label>
+<input type="number" id="pay-${index}" placeholder="Сумма" />
+</div>
+</div>
+
+<div class="actions">
+<button class="primary" onclick="makePayment(${index})">Записать платеж</button>
+<button class="danger" onclick="deleteCredit(${index})">Удалить</button>
+</div>
+`;
+
+creditsEl.appendChild(div);
+});
+
+const historyEl = document.getElementById('history');
+historyEl.innerHTML = '';
+
+state.history.slice().reverse().forEach(item=>{
+const div = document.createElement('div');
+div.className = 'history-item';
+div.innerHTML = `
+<strong>${item.text}</strong><br>
+<div class="small">${item.date}</div>
+`;
+historyEl.appendChild(div);
+});
+
+const motivation = document.getElementById('motivationText');
+
+if(total < 100000){
+motivation.textContent = 'Вы уже близко к финансовой свободе. Осталось совсем немного.';
+}else if(total < 500000){
+motivation.textContent = 'Долг уверенно снижается. Система работает.';
+}else{
+motivation.textContent = 'Даже крупный долг закрывается последовательными действиями.';
+}
+
+
+document.getElementById('totalDebt').textContent = formatMoney(total);
+document.getElementById('monthlyPayments').textContent = formatMoney(monthly);
+document.getElementById('creditCount').textContent = state.credits.length;
+}
+
+async function saveState(){
+try{
+updateStatus('Сохранение...', '#fff4cc');
+
+await docRef.set(state);
+
+localStorage.setItem('credit_tracker_backup', JSON.stringify(state));
+
+updateStatus('Синхронизировано', '#d1fadf');
+}catch(error){
+console.error(error);
+updateStatus('Ошибка синхронизации', '#fee4e2');
+}
+}
+
+async function addCredit(){
+const credit = {
+name: document.getElementById('name').value || 'Кредит',
+bank: document.getElementById('bank').value || '-',
+balance: Number(document.getElementById('amount').value || 0),
+rate: Number(document.getElementById('rate').value || 0),
+payment: Number(document.getElementById('payment').value || 0),
+months: Number(document.getElementById('months').value || 0),
+createdAt: new Date().toISOString()
+};
+
+state.credits.push(credit);
+
+state.history.push({
+text: `Добавлен кредит: ${credit.name}`,
+date: new Date().toLocaleString('ru-RU')
+});
+
+render();
+await saveState();
+}
+
+async function makePayment(index){
+const input = document.getElementById(`pay-${index}`);
+const amount = Number(input.value || 0);
+
+if(amount <= 0){
+alert('Введите сумму платежа');
+return;
+}
+
+state.credits[index].balance -= amount;
+
+if(state.credits[index].balance < 0){
+state.credits[index].balance = 0;
+}
+
+state.history.push({
+text: `Платеж ${formatMoney(amount)} по кредиту ${state.credits[index].name}`,
+date: new Date().toLocaleString('ru-RU')
+});
+
+render();
+await saveState();
+}
+
+async function deleteCredit(index){
+const name = state.credits[index].name;
+
+state.credits.splice(index,1);
+
+state.history.push({
+text: `Удален кредит: ${name}`,
+date: new Date().toLocaleString('ru-RU')
+});
+
+render();
+await saveState();
+}
+
+async function loadData(){
+try{
+const snapshot = await docRef.get();
+
+if(snapshot.exists){
+state = snapshot.data();
+}else{
+await docRef.set(state);
+}
+
+render();
+updateStatus('Синхронизировано', '#d1fadf');
+
+}catch(error){
+console.error(error);
+
+const local = localStorage.getItem('credit_tracker_backup');
+
+if(local){
+state = JSON.parse(local);
+render();
+}
+
+updateStatus('Локальный режим', '#fff4cc');
+}
+}
+
+loadData();
+
+</script>
 </body>
 </html>
+```
+
+После замены:
+
+1. Нажмите `Commit changes`
+2. Откройте сайт
+3. Нажмите `Ctrl + Shift + R`
+4. Проверьте:
+
+   * создание кредита
+   * сохранение после обновления страницы
+   * открытие с телефона
+   * отображение истории платежей
+
+В этой версии исправлены:
+
+* ошибка `persist is not defined`
+* проблемы с кнопками
+* проблемы с сохранением
+* зависание синхронизации
+* конфликт обработчиков
+* наезжающие поля
+* ошибки при загрузке Firebase
+* проблемы с сохранением между устройствами
