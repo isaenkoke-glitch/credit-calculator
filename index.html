@@ -475,6 +475,7 @@
         try {
           await docRef.set({ ...state, serverUpdatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
           setSyncState("Синхронизировано", "green");
+          setNotice("", "");
         } catch (e) {
           console.error(e);
           setSyncState("Локальный режим", "amber");
