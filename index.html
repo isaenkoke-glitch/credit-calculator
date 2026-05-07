@@ -944,7 +944,7 @@
             </div>
 
             <div class="card-actions">
-              <button class="primary" type="button" onclick="saveObligation('${ob.id}')">Сохранить</button>
+              <button class="primary" type="button" data-save-obligation="${ob.id}">Сохранить</button>
               <button class="ghost" type="button" onclick="fillExtraFrom('${ob.id}')">Внести свободную сумму сюда</button>
               <button class="danger" type="button" onclick="deleteObligation('${ob.id}')">Удалить</button>
               <span class="small-note">Следующий платёж: ${st.nextDue ? `${st.nextDue} · ${money(basePayment)}` : "не задан"}</span>
@@ -1199,27 +1199,37 @@
     }
 
     function saveObligation(id) {
-      const idx = state.obligations.findIndex((x) => x.id === id); if (idx < 0) return;
+      const idx = state.obligations.findIndex((x) => x.id === id);
+      if (idx < 0) return;
+
       const prev = state.obligations[idx];
-      const kind = document.getElementById(`kind-${id}`).value === "family" ? "family" : "credit";
-      const next = normalizeObligation({
+      const get = (name) => document.getElementById(`${name}-${id}`)?.value ?? "";
+
+      const kind = get("kind") === "family" ? "family" : "credit";
+      const termRaw = num(get("term"));
+
+      state.obligations[idx] = normalizeObligation({
         ...prev,
         kind,
-        name: document.getElementById(`name-${id}`).value.trim() || prev.name,
-        lender: document.getElementById(`lender-${id}`).value.trim(),
-        startDate: document.getElementById(`start-${id}`).value || todayISO(),
-        termMonths: Math.max(1, Math.floor(num(document.getElementById(`term-${id}`).value || 0))) || null,
-        initialPrincipal: num(document.getElementById(`principal-${id}`).value),
-        apr: kind === "credit" ? num(document.getElementById(`apr-${id}`).value) : 0,
-        minPayment: num(document.getElementById(`min-${id}`).value),
-        scheduledPayment: num(document.getElementById(`scheduled-${id}`).value),
-        paymentDay: clampDay(document.getElementById(`day-${id}`).value),
-        prepayMode: document.getElementById(`prepay-${id}`).value === "payment" ? "payment" : "term",
-        notes: document.getElementById(`notes-${id}`).value.trim(),
+        name: get("name").trim() || prev.name,
+        lender: get("lender").trim(),
+        startDate: get("start") || prev.startDate || todayISO(),
+        termMonths: termRaw > 0 ? Math.max(1, Math.floor(termRaw)) : (prev.termMonths ?? null),
+        initialPrincipal: num(get("principal")) || prev.initialPrincipal,
+        apr: kind === "credit" ? (num(get("apr")) || prev.apr || 0) : 0,
+        minPayment: num(get("min")) || prev.minPayment || 0,
+        scheduledPayment: num(get("scheduled")) || prev.scheduledPayment || 0,
+        paymentDay: clampDay(get("day")) ?? prev.paymentDay ?? null,
+        prepayMode: get("prepay") === "payment" ? "payment" : (prev.prepayMode || "term"),
+        notes: get("notes").trim(),
         active: true
       });
-      state.obligations[idx] = next; persist(); renderAll(); setNotice("Карточка сохранена.", "good");
+
+      persist();
+      renderAll();
+      setNotice("Карточка сохранена.", "good");
     }
+
     function deleteObligation(id) {
       const ob = state.obligations.find((x) => x.id === id); if (!ob) return;
       if (!confirm(`Удалить запись «${ob.name}» и все связанные платежи?`)) return;
@@ -1263,6 +1273,11 @@
 
     function on(id, event, handler) { const el = document.getElementById(id); if (el) el.addEventListener(event, handler); }
     function bindControls() {
+      document.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-save-obligation]");
+        if (!btn) return;
+        saveObligation(btn.dataset.saveObligation);
+      });
       els.newCreditStart.value = todayISO(); els.newFamilyStart.value = todayISO(); els.newTxDate.value = todayISO();
       els.freeAmount.value = state.ui.freeAmount; els.optimizeMode.value = state.ui.optimizeMode;
       on("addCreditBtn", "click", () => addObligation("credit"));
