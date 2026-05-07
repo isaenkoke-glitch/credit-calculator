@@ -1356,9 +1356,13 @@ async function initFirebase(){
       state=normalizeState(snapshot.data());
       saveLocal();
       setNotice("Загружена общая версия данных из Firebase.","good");
+      renderAll();
+      setSyncState("Синхронизировано","green");
     }else{
       await docRef.set({...state,serverUpdatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
       setNotice("Firestore готов. Создан пустой общий документ.","warn");
+      renderAll();
+      setSyncState("Синхронизировано","green");
     }
     docRef.onSnapshot(snapshot=>{
       try{
