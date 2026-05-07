@@ -686,7 +686,7 @@
       return { labels, series, closures, currentIndex: 0 };
     }
 
-    function buildDebtSeries() {) {
+    function buildDebtSeries() {
       const now = new Date();
       const firstStart = state.obligations.length ? state.obligations.map(o => parseDate(o.startDate) || now).reduce((a, b) => a < b ? a : b) : now;
       const startMonth = monthStart(firstStart);
