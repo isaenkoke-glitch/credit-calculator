@@ -319,7 +319,7 @@
       <div class="section-head">
         <div>
           <h2>Платежи, досрочки и возвраты</h2>
-          <div class="subtitle">Каждую внесённую сумму можно записать отдельной строкой. История влияет на графики, прогноз и рефинанс.</div>
+          <div class="subtitle">Добавляйте платежи, редактируйте суммы процентов и тела, фильтруйте историю по конкретному кредиту без дублирования блоков.</div>
         </div>
         <div class="section-hint">Можно ввести платежи задним числом</div>
       </div>
@@ -340,14 +340,10 @@
         <div class="field full"><button class="primary" id="addTxBtn" type="button">Добавить запись</button></div>
       </div>
 
-      <div class="tx-list" id="txList" style="margin-top:14px;"></div>
-    </section>
-
-    <section class="panel">
-      <div class="section-head">
+      <div class="section-head" style="margin-top:18px;">
         <div>
           <h2>История платежей</h2>
-          <div class="subtitle">Фильтр по кредиту, цветные метки и детализация: сколько ушло в проценты и сколько в тело.</div>
+          <div class="subtitle">Фильтр по кредиту, цветные метки, ручное редактирование и детализация: сколько ушло в проценты и сколько в тело.</div>
         </div>
         <div class="section-hint"><select id="historyFilter"></select></div>
       </div>
@@ -380,6 +376,15 @@
       </div>
       <canvas id="forecastChart"></canvas>
       <div class="mini-stats" id="forecastStats"></div>
+
+      <div class="section-head" style="margin-top:18px;">
+        <div>
+          <h2>График остатка долга</h2>
+          <div class="subtitle">История прошлых платежей и прогноз снижения долга на одной линии.</div>
+        </div>
+      </div>
+      <canvas id="debtChart"></canvas>
+      <div class="mini-stats" id="debtStats"></div>
     </section>
 
     <section class="panel chart-box">
@@ -530,8 +535,10 @@
       summaryGrid: document.getElementById("summaryGrid"),
       creditList: document.getElementById("creditList"),
       familyList: document.getElementById("familyList"),
-      txList: document.getElementById("txList"),
+      txList: document.getElementById("historyList"),
       historyList: document.getElementById("historyList"),
+      debtChart: document.getElementById("debtChart"),
+      debtStats: document.getElementById("debtStats"),
       historyFilter: document.getElementById("historyFilter"),
       upcomingList: document.getElementById("upcomingList"),
       recommendations: document.getElementById("recommendations"),
@@ -916,6 +923,37 @@
       return { labels, series, currentIndex: 0 };
     }
 
+    function buildDebtSeries() {
+      const now = new Date();
+      const firstStart = state.obligations.length
+        ? state.obligations.map(o => parseDate(o.startDate) || now).reduce((a, b) => a < b ? a : b)
+        : now;
+      const startMonth = monthStart(firstStart);
+      const currentMonth = monthStart(now);
+      const historyMonths = monthsBetween(startMonth, currentMonth);
+      const labels = [];
+      const series = [];
+
+      for (let i = 0; i <= historyMonths; i++) {
+        const dt = addMonths(startMonth, i);
+        labels.push(dt.toLocaleDateString("ru-RU", { month: "short", year: "numeric" }));
+        series.push(totalBalanceAt(monthEnd(dt)));
+      }
+
+      const currentLedgers = new Map();
+      state.obligations.forEach(ob => currentLedgers.set(ob.id, computeLedger(ob, now)));
+      for (let m = 1; m <= MAX_FORECAST_MONTHS; m++) {
+        labels.push(`+${m}м`);
+        let total = 0;
+        for (const ob of state.obligations) {
+          total += projectObligationBalance(ob, currentLedgers.get(ob.id), m);
+        }
+        series.push(total);
+      }
+
+      return { labels, series, currentIndex: historyMonths };
+    }
+
     function buildRecommendations(ledgers) {
       const amount = Math.max(0, num(state.ui.freeAmount));
       const candidates = state.obligations
@@ -1227,7 +1265,11 @@
 
     function renderHistory() {
       const filter = els.historyFilter.value || "all";
-      const txs = state.transactions.filter(tx => filter === "all" ? true : tx.obligationId === filter).slice().sort((a, b) => b.date.localeCompare(a.date));
+      const txs = state.transactions
+        .filter(tx => filter === "all" ? true : tx.obligationId === filter)
+        .slice()
+        .sort((a, b) => b.date.localeCompare(a.date));
+
       if (!txs.length) {
         els.historyList.innerHTML = `<div class="empty">История по выбранному фильтру пока пустая.</div>`;
         return;
@@ -1253,6 +1295,8 @@
             </div>
             <div class="right" style="text-align:right;min-width:140px;">
               <div class="sum">${fmtMoney(tx.amount)}</div>
+              <button class="ghost" type="button" style="margin-top:8px;" onclick="openEditTx('${tx.id}')">Редактировать</button>
+              <button class="ghost" type="button" style="margin-top:8px;" onclick="deleteTransaction('${tx.id}')">Удалить</button>
             </div>
           </div>
         `;
@@ -1435,22 +1479,32 @@
         charts.forecast.update();
       }
 
-      if (!charts.breakdown) {
-        charts.breakdown = new Chart(els.breakdownChart, {
-          type: "doughnut",
+      const debtPack = derived.debtSeriesPack;
+      if (!charts.debt) {
+        charts.debt = new Chart(els.debtChart, {
+          type: "line",
           data: {
-            labels: ["Тело кредитов", "Начисленные проценты", "Долги родственникам"],
+            labels: debtPack.labels,
             datasets: [{
-              data: [Math.max(0, derived.totals.principal), Math.max(0, derived.totals.interest), Math.max(0, derived.totals.family)],
-              borderWidth: 0,
-              backgroundColor: ["rgba(37,99,235,.85)", "rgba(217,119,6,.85)", "rgba(5,150,105,.85)"]
+              label: "Остаток долга",
+              data: debtPack.series,
+              tension: 0.18,
+              fill: true,
+              borderWidth: 3,
+              pointRadius: 2,
+              pointHoverRadius: 5,
+              pointBackgroundColor: "#d97706",
+              pointBorderColor: "#d97706",
+              borderColor: "#d97706",
+              backgroundColor: "rgba(217,119,6,.10)"
             }]
           },
-          options: chartDoughnutOptions()
+          options: chartLineOptions()
         });
       } else {
-        charts.breakdown.data.datasets[0].data = [Math.max(0, derived.totals.principal), Math.max(0, derived.totals.interest), Math.max(0, derived.totals.family)];
-        charts.breakdown.update();
+        charts.debt.data.labels = debtPack.labels;
+        charts.debt.data.datasets[0].data = debtPack.series;
+        charts.debt.update();
       }
 
       const s = derived.seriesPack.series;
@@ -1460,6 +1514,15 @@
         <div class="mini-stat"><div class="k">Сейчас</div><div class="v">${fmtMoney(derived.totals.balance)}</div></div>
         <div class="mini-stat"><div class="k">Через 12 мес.</div><div class="v">${fmtMoney(at12)}</div></div>
         <div class="mini-stat"><div class="k">Через 24 мес.</div><div class="v">${fmtMoney(at24)}</div></div>
+      `;
+
+      const debtS = debtPack.series;
+      const debtAt12 = debtS[Math.min(12, debtS.length - 1)] ?? debtS[debtS.length - 1] ?? 0;
+      const debtAt24 = debtS[Math.min(24, debtS.length - 1)] ?? debtS[debtS.length - 1] ?? 0;
+      els.debtStats.innerHTML = `
+        <div class="mini-stat"><div class="k">Сейчас</div><div class="v">${fmtMoney(debtS[debtPack.currentIndex] ?? derived.totals.balance)}</div></div>
+        <div class="mini-stat"><div class="k">Через 12 мес.</div><div class="v">${fmtMoney(debtAt12)}</div></div>
+        <div class="mini-stat"><div class="k">Через 24 мес.</div><div class="v">${fmtMoney(debtAt24)}</div></div>
       `;
 
       els.breakdownLegend.innerHTML = `
@@ -1480,11 +1543,11 @@
 
     function renderAll() {
       derived = computeDerived();
+      renderHistoryFilterOptions();
       renderTxOptions();
       renderSummary();
       renderObligationList("credit");
       renderObligationList("family");
-      renderTransactions();
       renderHistory();
       renderRecommendations();
       renderSupport();
