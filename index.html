@@ -15,7 +15,7 @@
   <style>
     :root {
       --bg: #eef3fb;
-      --panel: rgba(255, 255, 255, 0.92);
+      --panel: rgba(255, 255, 255, 0.94);
       --text: #122033;
       --muted: #66758a;
       --line: rgba(18, 32, 51, 0.10);
@@ -28,32 +28,20 @@
       --amber-soft: rgba(217, 119, 6, 0.14);
       --red: #dc2626;
       --red-soft: rgba(220, 38, 38, 0.12);
-      --radius: 24px;
     }
 
-    * {
-      box-sizing: border-box;
-    }
-
-    html, body {
-      margin: 0;
-      padding: 0;
-    }
-
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
     body {
       font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       color: var(--text);
       background:
-        radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 30%),
-        radial-gradient(circle at top right, rgba(5, 150, 105, 0.10), transparent 24%),
+        radial-gradient(circle at top left, rgba(37,99,235,.12), transparent 30%),
+        radial-gradient(circle at top right, rgba(5,150,105,.10), transparent 24%),
         var(--bg);
     }
 
-    .shell {
-      max-width: 1560px;
-      margin: 0 auto;
-      padding: 24px;
-    }
+    .shell { max-width: 1560px; margin: 0 auto; padding: 24px; }
 
     .topbar {
       display: flex;
@@ -61,473 +49,110 @@
       align-items: flex-start;
       gap: 18px;
       flex-wrap: wrap;
-      background: rgba(255, 255, 255, 0.72);
+      background: rgba(255,255,255,.74);
       backdrop-filter: blur(16px);
       border: 1px solid var(--line);
       border-radius: 28px;
       padding: 18px 20px;
       box-shadow: var(--shadow);
     }
+    .title-wrap h1 { margin: 0; font-size: clamp(24px, 2.6vw, 38px); letter-spacing: -.03em; }
+    .title-wrap p { margin: 8px 0 0; color: var(--muted); font-size: 14px; max-width: 980px; line-height: 1.5; }
 
-    .title-wrap h1 {
-      margin: 0;
-      font-size: clamp(24px, 2.6vw, 38px);
-      letter-spacing: -0.03em;
-    }
-
-    .title-wrap p {
-      margin: 8px 0 0;
-      color: var(--muted);
-      font-size: 14px;
-      max-width: 980px;
-      line-height: 1.5;
-    }
-
-    .top-actions {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 10px;
-    }
-
-    .status-row,
-    .toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: flex-end;
-    }
+    .top-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+    .status-row, .toolbar { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
 
     .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 14px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.88);
-      border: 1px solid var(--line);
-      font-size: 13px;
-      font-weight: 700;
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 14px; border-radius: 999px;
+      background: rgba(255,255,255,.88); border: 1px solid var(--line);
+      font-size: 13px; font-weight: 700;
     }
-
-    .pill.blue {
-      background: var(--blue-soft);
-      color: #1d4ed8;
-      border-color: rgba(37, 99, 235, 0.18);
-    }
-
-    .pill.green {
-      background: var(--green-soft);
-      color: #047857;
-      border-color: rgba(5, 150, 105, 0.18);
-    }
-
-    .pill.amber {
-      background: var(--amber-soft);
-      color: #92400e;
-      border-color: rgba(217, 119, 6, 0.18);
-    }
+    .pill.blue { background: var(--blue-soft); color: #1d4ed8; border-color: rgba(37,99,235,.18); }
+    .pill.green { background: var(--green-soft); color: #047857; border-color: rgba(5,150,105,.18); }
+    .pill.amber { background: var(--amber-soft); color: #92400e; border-color: rgba(217,119,6,.18); }
 
     button {
-      border: 0;
-      border-radius: 14px;
-      padding: 11px 14px;
-      cursor: pointer;
-      font: inherit;
-      font-weight: 700;
-      background: #e5eefb;
-      color: #1d4ed8;
-      box-shadow: 0 8px 18px rgba(29, 78, 216, 0.08);
-      transition: transform 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
+      border: 0; border-radius: 14px; padding: 11px 14px; cursor: pointer;
+      font: inherit; font-weight: 700; background: #e5eefb; color: #1d4ed8;
+      box-shadow: 0 8px 18px rgba(29,78,216,.08); transition: transform .16s ease, box-shadow .16s ease;
     }
-
-    button:hover {
-      transform: translateY(-1px);
-    }
-
-    button.primary {
-      background: linear-gradient(135deg, #2563eb, #4f46e5);
-      color: #fff;
-    }
-
-    button.ghost {
-      background: rgba(255, 255, 255, 0.86);
-      color: var(--text);
-      border: 1px solid var(--line);
-      box-shadow: none;
-    }
-
-    button.danger {
-      background: var(--red-soft);
-      color: #b91c1c;
-      box-shadow: none;
-    }
+    button:hover { transform: translateY(-1px); }
+    button.primary { background: linear-gradient(135deg, #2563eb, #4f46e5); color: #fff; }
+    button.ghost { background: rgba(255,255,255,.86); color: var(--text); border: 1px solid var(--line); box-shadow: none; }
+    button.danger { background: var(--red-soft); color: #b91c1c; box-shadow: none; }
 
     .notice {
-      margin: 14px 0 18px;
-      padding: 14px 16px;
-      border-radius: 18px;
-      border: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.74);
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.5;
+      margin: 14px 0 18px; padding: 14px 16px; border-radius: 18px;
+      border: 1px solid var(--line); background: rgba(255,255,255,.74);
+      color: var(--muted); font-size: 14px; line-height: 1.5;
     }
 
-    .summary-grid {
-      display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: 14px;
-      margin-bottom: 18px;
-    }
-
+    .summary-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; margin-bottom: 18px; }
     .metric {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 24px;
-      padding: 18px;
-      box-shadow: var(--shadow);
-      min-height: 110px;
-      min-width: 0;
-      cursor: pointer;
-      user-select: none;
+      background: var(--panel); border: 1px solid var(--line); border-radius: 24px;
+      padding: 18px; box-shadow: var(--shadow); min-height: 110px; cursor: pointer; user-select: none;
     }
+    .metric .label { color: var(--muted); font-size: 13px; margin-bottom: 8px; }
+    .metric .value { font-size: clamp(22px, 2vw, 34px); font-weight: 900; letter-spacing: -.03em; overflow-wrap: anywhere; }
+    .metric .sub { margin-top: 8px; color: var(--muted); font-size: 13px; line-height: 1.4; }
+    .metric.blue { background: linear-gradient(180deg, rgba(37,99,235,.14), rgba(255,255,255,.94)); }
+    .metric.green { background: linear-gradient(180deg, rgba(5,150,105,.14), rgba(255,255,255,.94)); }
+    .metric.amber { background: linear-gradient(180deg, rgba(217,119,6,.16), rgba(255,255,255,.94)); }
+    .metric.red { background: linear-gradient(180deg, rgba(220,38,38,.14), rgba(255,255,255,.94)); }
 
-    .metric .label {
-      color: var(--muted);
-      font-size: 13px;
-      margin-bottom: 8px;
-    }
+    .detail-panel { display: none; margin-top: 10px; padding: 12px 14px; border-radius: 16px; background: rgba(255,255,255,.92); border: 1px solid rgba(18,32,51,.08); }
+    .detail-panel.open { display: block; }
+    .detail-row { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; font-size: 13px; border-bottom: 1px dashed rgba(18,32,51,.08); }
+    .detail-row:last-child { border-bottom: 0; }
 
-    .metric .value {
-      font-size: clamp(22px, 2vw, 34px);
-      font-weight: 900;
-      letter-spacing: -0.03em;
-      overflow-wrap: anywhere;
-    }
+    .layout { display: grid; grid-template-columns: minmax(0, 1.44fr) minmax(360px, .96fr); gap: 18px; align-items: start; }
+    .stack { display: grid; gap: 18px; min-width: 0; }
+    .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 28px; box-shadow: var(--shadow); padding: 18px; min-width: 0; }
+    .panel h2 { margin: 0 0 8px; font-size: 21px; letter-spacing: -.02em; }
+    .subtitle { margin: 0 0 16px; color: var(--muted); font-size: 14px; line-height: 1.5; }
+    .section-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 10px; }
+    .section-hint { color: var(--muted); font-size: 13px; white-space: nowrap; }
 
-    .metric .sub {
-      margin-top: 8px;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.4;
-    }
+    .ob-list, .tx-list, .upcoming-list, .rec-list { display: grid; gap: 12px; }
+    .ob-card { background: rgba(255,255,255,.96); border: 1px solid var(--line); border-radius: 22px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+    .ob-card.credit { border-left: 6px solid var(--blue); }
+    .ob-card.family { border-left: 6px solid var(--green); }
+    .ob-top { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; min-width: 0; }
+    .ob-title { font-size: 18px; font-weight: 900; margin: 4px 0; letter-spacing: -.02em; overflow-wrap: anywhere; }
+    .ob-meta { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
 
-    .metric.blue {
-      background: linear-gradient(180deg, rgba(37, 99, 235, 0.14), rgba(255, 255, 255, 0.94));
-    }
+    .badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; }
+    .badge.credit { background: var(--blue-soft); color: #1d4ed8; }
+    .badge.family { background: var(--green-soft); color: #047857; }
+    .badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .tag { display: inline-flex; align-items: center; gap: 6px; padding: 5px 9px; border-radius: 999px; font-size: 12px; font-weight: 800; background: #eef2ff; color: #334155; border: 1px solid rgba(51,65,85,.08); }
 
-    .metric.green {
-      background: linear-gradient(180deg, rgba(5, 150, 105, 0.14), rgba(255, 255, 255, 0.94));
-    }
+    .balance-box { min-width: 180px; text-align: right; padding: 10px 12px; border-radius: 18px; background: rgba(18,32,51,.04); border: 1px solid rgba(18,32,51,.06); }
+    .balance-box .label { color: var(--muted); font-size: 12px; }
+    .balance-box .value { margin-top: 4px; font-size: 24px; font-weight: 900; letter-spacing: -.03em; overflow-wrap: anywhere; }
 
-    .metric.amber {
-      background: linear-gradient(180deg, rgba(217, 119, 6, 0.16), rgba(255, 255, 255, 0.94));
-    }
+    .progress { width: 100%; height: 12px; border-radius: 999px; background: rgba(18,32,51,.07); overflow: hidden; }
+    .progress > div { height: 100%; border-radius: inherit; background: linear-gradient(90deg, #60a5fa, #34d399); }
+    .stats-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+    .stat { padding: 10px 12px; border-radius: 16px; background: rgba(18,32,51,.04); border: 1px solid rgba(18,32,51,.05); }
+    .stat .k { color: var(--muted); font-size: 12px; margin-bottom: 4px; }
+    .stat .v { font-size: 16px; font-weight: 900; overflow-wrap: anywhere; }
 
-    .metric.red {
-      background: linear-gradient(180deg, rgba(220, 38, 38, 0.14), rgba(255, 255, 255, 0.94));
-    }
-
-    .detail-panel {
-      display: none;
-      margin-top: 10px;
-      padding: 12px 14px;
-      border-radius: 16px;
-      background: rgba(255, 255, 255, 0.92);
-      border: 1px solid rgba(18, 32, 51, 0.08);
-    }
-
-    .detail-panel.open {
-      display: block;
-    }
-
-    .detail-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 6px 0;
-      font-size: 13px;
-      border-bottom: 1px dashed rgba(18, 32, 51, 0.08);
-    }
-
-    .detail-row:last-child {
-      border-bottom: 0;
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: minmax(0, 1.44fr) minmax(360px, 0.96fr);
-      gap: 18px;
-      align-items: start;
-    }
-
-    .stack {
-      display: grid;
-      gap: 18px;
-      min-width: 0;
-    }
-
-    .panel {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 28px;
-      box-shadow: var(--shadow);
-      padding: 18px;
-      min-width: 0;
-    }
-
-    .panel h2 {
-      margin: 0 0 8px;
-      font-size: 21px;
-      letter-spacing: -0.02em;
-    }
-
-    .subtitle {
-      margin: 0 0 16px;
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.5;
-    }
-
-    .section-head {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: flex-start;
-      margin-bottom: 10px;
-    }
-
-    .section-hint {
-      color: var(--muted);
-      font-size: 13px;
-      white-space: nowrap;
-    }
-
-    .ob-list,
-    .tx-list,
-    .upcoming-list,
-    .rec-list {
-      display: grid;
-      gap: 12px;
-    }
-
-    .ob-card {
-      background: rgba(255, 255, 255, 0.96);
-      border: 1px solid var(--line);
-      border-radius: 22px;
-      padding: 16px;
-      display: grid;
-      gap: 12px;
-      min-width: 0;
-    }
-
-    .ob-card.credit {
-      border-left: 6px solid var(--blue);
-    }
-
-    .ob-card.family {
-      border-left: 6px solid var(--green);
-    }
-
-    .ob-top {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: flex-start;
-      min-width: 0;
-    }
-
-    .ob-title {
-      font-size: 18px;
-      font-weight: 900;
-      margin: 4px 0;
-      letter-spacing: -0.02em;
-      overflow-wrap: anywhere;
-    }
-
-    .ob-meta {
-      color: var(--muted);
-      font-size: 13px;
-      overflow-wrap: anywhere;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .badge.credit {
-      background: var(--blue-soft);
-      color: #1d4ed8;
-    }
-
-    .badge.family {
-      background: var(--green-soft);
-      color: #047857;
-    }
-
-    .badges {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 6px;
-    }
-
-    .tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 5px 9px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 800;
-      background: #eef2ff;
-      color: #334155;
-      border: 1px solid rgba(51, 65, 85, 0.08);
-    }
-
-    .balance-box {
-      min-width: 180px;
-      text-align: right;
-      padding: 10px 12px;
-      border-radius: 18px;
-      background: rgba(18, 32, 51, 0.04);
-      border: 1px solid rgba(18, 32, 51, 0.06);
-    }
-
-    .balance-box .label {
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .balance-box .value {
-      margin-top: 4px;
-      font-size: 24px;
-      font-weight: 900;
-      letter-spacing: -0.03em;
-      overflow-wrap: anywhere;
-    }
-
-    .progress {
-      width: 100%;
-      height: 12px;
-      border-radius: 999px;
-      background: rgba(18, 32, 51, 0.07);
-      overflow: hidden;
-    }
-
-    .progress > div {
-      height: 100%;
-      border-radius: inherit;
-      background: linear-gradient(90deg, #60a5fa, #34d399);
-    }
-
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 10px;
-    }
-
-    .stat {
-      padding: 10px 12px;
-      border-radius: 16px;
-      background: rgba(18, 32, 51, 0.04);
-      border: 1px solid rgba(18, 32, 51, 0.05);
-      min-width: 0;
-    }
-
-    .stat .k {
-      color: var(--muted);
-      font-size: 12px;
-      margin-bottom: 4px;
-    }
-
-    .stat .v {
-      font-size: 16px;
-      font-weight: 900;
-      overflow-wrap: anywhere;
-    }
-
-    .edit-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 10px;
-      min-width: 0;
-    }
-
-    .field {
-      display: grid;
-      gap: 6px;
-      min-width: 0;
-    }
-
-    .field label {
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 700;
-    }
-
+    .edit-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; min-width: 0; }
+    .field { display: grid; gap: 6px; min-width: 0; }
+    .field label { color: var(--muted); font-size: 12px; font-weight: 700; }
     input, select, textarea {
-      width: 100%;
-      min-width: 0;
-      border-radius: 14px;
-      border: 1px solid rgba(18, 32, 51, 0.12);
-      background: #fff;
-      color: var(--text);
-      padding: 11px 12px;
-      outline: none;
-      font: inherit;
+      width: 100%; min-width: 0; border-radius: 14px; border: 1px solid rgba(18,32,51,.12);
+      background: #fff; color: var(--text); padding: 11px 12px; outline: none; font: inherit;
     }
+    textarea { min-height: 82px; resize: vertical; }
+    input:focus, select:focus, textarea:focus { border-color: rgba(37,99,235,.55); box-shadow: 0 0 0 4px rgba(37,99,235,.10); }
+    .card-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .small-note { color: var(--muted); font-size: 12px; }
+    .empty { padding: 18px; border-radius: 18px; border: 1px dashed rgba(18,32,51,.18); color: var(--muted); background: rgba(255,255,255,.72); text-align: center; }
 
-    textarea {
-      min-height: 82px;
-      resize: vertical;
-    }
-
-    input:focus,
-    select:focus,
-    textarea:focus {
-      border-color: rgba(37, 99, 235, 0.55);
-      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.10);
-    }
-
-    .card-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-      min-width: 0;
-    }
-
-    .small-note {
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .empty {
-      padding: 18px;
-      border-radius: 18px;
-      border: 1px dashed rgba(18, 32, 51, 0.18);
-      color: var(--muted);
-      background: rgba(255, 255, 255, 0.72);
-      text-align: center;
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(12, minmax(0, 1fr));
-      gap: 10px;
-      align-items: end;
-      margin-top: 12px;
-      min-width: 0;
-    }
-
+    .form-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 10px; align-items: end; margin-top: 12px; min-width: 0; }
     .form-grid .field:nth-child(1) { grid-column: span 3; }
     .form-grid .field:nth-child(2) { grid-column: span 3; }
     .form-grid .field:nth-child(3) { grid-column: span 2; }
@@ -542,115 +167,26 @@
     .form-grid .field:nth-child(12) { grid-column: span 3; }
     .form-grid .field.full { grid-column: 1 / -1; }
 
-    .recommend-card {
-      border-radius: 22px;
-      padding: 16px;
-      background: linear-gradient(180deg, rgba(37, 99, 235, 0.10), rgba(255, 255, 255, 0.95));
-      border: 1px solid rgba(37, 99, 235, 0.16);
-    }
+    .recommend-card { border-radius: 22px; padding: 16px; background: linear-gradient(180deg, rgba(37,99,235,.10), rgba(255,255,255,.95)); border: 1px solid rgba(37,99,235,.16); }
+    .recommend-card.family { background: linear-gradient(180deg, rgba(5,150,105,.12), rgba(255,255,255,.95)); border-color: rgba(5,150,105,.16); }
+    .recommend-card .row { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+    .recommend-card h3 { margin: 6px 0; font-size: 18px; overflow-wrap: anywhere; }
+    .recommend-card .meta { color: var(--muted); font-size: 13px; line-height: 1.45; }
 
-    .recommend-card.family {
-      background: linear-gradient(180deg, rgba(5, 150, 105, 0.12), rgba(255, 255, 255, 0.95));
-      border-color: rgba(5, 150, 105, 0.16);
-    }
+    canvas { width: 100% !important; height: 280px !important; }
+    .chart-box { padding-top: 8px; }
+    .mini-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+    .mini-stat { padding: 12px; border-radius: 16px; background: rgba(18,32,51,.04); border: 1px solid rgba(18,32,51,.05); }
+    .mini-stat .k { color: var(--muted); font-size: 12px; margin-bottom: 4px; }
+    .mini-stat .v { font-size: 16px; font-weight: 900; overflow-wrap: anywhere; }
 
-    .recommend-card .row {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: flex-start;
-    }
+    .tx-item { background: rgba(255,255,255,.96); border: 1px solid var(--line); border-radius: 18px; padding: 14px; display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; min-width: 0; }
+    .tx-item .left { display: grid; gap: 4px; min-width: 0; }
+    .tx-item .title { font-weight: 900; overflow-wrap: anywhere; }
+    .tx-item .meta { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
+    .tx-item .sum { font-size: 18px; font-weight: 900; text-align: right; overflow-wrap: anywhere; }
 
-    .recommend-card h3 {
-      margin: 6px 0;
-      font-size: 18px;
-      overflow-wrap: anywhere;
-    }
-
-    .recommend-card .meta {
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.45;
-    }
-
-    canvas {
-      width: 100% !important;
-      height: 280px !important;
-    }
-
-    .chart-box {
-      padding-top: 8px;
-    }
-
-    .mini-stats {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 10px;
-      margin-top: 12px;
-    }
-
-    .mini-stat {
-      padding: 12px;
-      border-radius: 16px;
-      background: rgba(18, 32, 51, 0.04);
-      border: 1px solid rgba(18, 32, 51, 0.05);
-      min-width: 0;
-    }
-
-    .mini-stat .k {
-      color: var(--muted);
-      font-size: 12px;
-      margin-bottom: 4px;
-    }
-
-    .mini-stat .v {
-      font-size: 16px;
-      font-weight: 900;
-      overflow-wrap: anywhere;
-    }
-
-    .tx-item {
-      background: rgba(255, 255, 255, 0.96);
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      padding: 14px;
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: flex-start;
-      min-width: 0;
-    }
-
-    .tx-item .left {
-      display: grid;
-      gap: 4px;
-      min-width: 0;
-    }
-
-    .tx-item .title {
-      font-weight: 900;
-      overflow-wrap: anywhere;
-    }
-
-    .tx-item .meta {
-      color: var(--muted);
-      font-size: 13px;
-      overflow-wrap: anywhere;
-    }
-
-    .tx-item .sum {
-      font-size: 18px;
-      font-weight: 900;
-      text-align: right;
-      overflow-wrap: anywhere;
-    }
-
-    .refi-grid {
-      display: grid;
-      grid-template-columns: repeat(12, minmax(0, 1fr));
-      gap: 10px;
-    }
-
+    .refi-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 10px; }
     .refi-grid .field:nth-child(1) { grid-column: span 6; }
     .refi-grid .field:nth-child(2) { grid-column: span 6; }
     .refi-grid .field:nth-child(3) { grid-column: span 4; }
@@ -659,170 +195,40 @@
     .refi-grid .field:nth-child(6) { grid-column: span 6; }
     .refi-grid .field:nth-child(7) { grid-column: span 6; }
 
-    .support-box {
-      border-radius: 22px;
-      padding: 16px;
-      background: linear-gradient(180deg, rgba(37, 99, 235, 0.10), rgba(255, 255, 255, 0.95));
-      border: 1px solid rgba(37, 99, 235, 0.16);
-    }
+    .support-box { border-radius: 22px; padding: 16px; background: linear-gradient(180deg, rgba(37,99,235,.10), rgba(255,255,255,.95)); border: 1px solid rgba(37,99,235,.16); }
+    .support-box.green { background: linear-gradient(180deg, rgba(5,150,105,.12), rgba(255,255,255,.95)); border-color: rgba(5,150,105,.16); }
+    .support-box .headline { font-size: 18px; font-weight: 900; margin-bottom: 6px; }
+    .support-box .text { color: var(--muted); font-size: 14px; line-height: 1.55; }
 
-    .support-box.green {
-      background: linear-gradient(180deg, rgba(5, 150, 105, 0.12), rgba(255, 255, 255, 0.95));
-      border-color: rgba(5, 150, 105, 0.16);
-    }
+    .legend-list { display: grid; gap: 10px; margin-top: 10px; }
+    .legend-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border-radius: 16px; background: rgba(18,32,51,.04); border: 1px solid rgba(18,32,51,.05); }
+    .legend-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .dot { width: 12px; height: 12px; border-radius: 999px; flex: 0 0 auto; }
+    .legend-name { font-size: 13px; font-weight: 800; overflow-wrap: anywhere; }
+    .legend-value { font-size: 13px; font-weight: 900; white-space: nowrap; }
 
-    .support-box .headline {
-      font-size: 18px;
-      font-weight: 900;
-      margin-bottom: 6px;
-    }
-
-    .support-box .text {
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.55;
-    }
-
-    .legend-list {
-      display: grid;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    .legend-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 10px 12px;
-      border-radius: 16px;
-      background: rgba(18, 32, 51, 0.04);
-      border: 1px solid rgba(18, 32, 51, 0.05);
-      min-width: 0;
-    }
-
-    .legend-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-width: 0;
-    }
-
-    .dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 999px;
-      flex: 0 0 auto;
-    }
-
-    .legend-name {
-      font-size: 13px;
-      font-weight: 800;
-      overflow-wrap: anywhere;
-    }
-
-    .legend-value {
-      font-size: 13px;
-      font-weight: 900;
-      white-space: nowrap;
-    }
-
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.45);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      padding: 16px;
-    }
-
-    .modal-backdrop.open {
-      display: flex;
-    }
-
-    .modal {
-      width: min(760px, 100%);
-      background: #fff;
-      border-radius: 24px;
-      box-shadow: 0 40px 100px rgba(0, 0, 0, 0.25);
-      padding: 18px;
-      border: 1px solid var(--line);
-    }
-
-    .modal h3 {
-      margin: 0 0 12px;
-    }
-
-    .modal-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      margin-top: 14px;
-    }
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 16px; }
+    .modal-backdrop.open { display: flex; }
+    .modal { width: min(760px, 100%); background: #fff; border-radius: 24px; box-shadow: 0 40px 100px rgba(0,0,0,.25); padding: 18px; border: 1px solid var(--line); }
+    .modal h3 { margin: 0 0 12px; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; }
 
     @media (max-width: 1320px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
-
-      .summary-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      canvas {
-        height: 260px !important;
-      }
+      .layout { grid-template-columns: 1fr; }
+      .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      canvas { height: 260px !important; }
     }
 
     @media (max-width: 760px) {
-      .shell {
-        padding: 14px;
-      }
-
-      .topbar {
-        padding: 14px;
-        border-radius: 22px;
-        flex-direction: column;
-      }
-
-      .top-actions {
-        width: 100%;
-        align-items: flex-start;
-      }
-
-      .status-row,
-      .toolbar {
-        justify-content: flex-start;
-      }
-
-      .summary-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .stats-row,
-      .edit-grid,
-      .mini-stats,
-      .refi-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .form-grid .field {
-        grid-column: 1 / -1 !important;
-      }
-
-      .ob-top,
-      .recommend-card .row,
-      .tx-item,
-      .section-head {
-        flex-direction: column;
-      }
-
-      .balance-box {
-        width: 100%;
-        text-align: left;
-      }
+      .shell { padding: 14px; }
+      .topbar { padding: 14px; border-radius: 22px; flex-direction: column; }
+      .top-actions { width: 100%; align-items: flex-start; }
+      .status-row, .toolbar { justify-content: flex-start; }
+      .summary-grid { grid-template-columns: 1fr; }
+      .stats-row, .edit-grid, .mini-stats, .refi-grid { grid-template-columns: 1fr; }
+      .form-grid .field { grid-column: 1 / -1 !important; }
+      .ob-top, .recommend-card .row, .tx-item, .section-head { flex-direction: column; }
+      .balance-box { width: 100%; text-align: left; }
     }
   </style>
 
@@ -848,10 +254,7 @@
     </div>
 
 ```
-<div class="notice" id="notice">
-  Добавляйте кредиты, займы родственникам и платежи. Остатки, графики и рекомендации будут обновляться автоматически.
-</div>
-
+<div class="notice" id="notice">Добавляйте кредиты, займы родственникам и платежи. Остатки, графики и рекомендации будут обновляться автоматически.</div>
 <div class="summary-grid" id="summaryGrid"></div>
 
 <div class="layout">
@@ -878,10 +281,7 @@
         <div class="field"><label>Плановый платёж</label><input id="newCreditScheduled" type="number" step="0.01" placeholder="0" /></div>
         <div class="field"><label>День месяца</label><input id="newCreditDay" type="number" min="1" max="31" placeholder="1–31" /></div>
         <div class="field"><label>Досрочка</label>
-          <select id="newCreditPrepayMode">
-            <option value="term">Уменьшать срок</option>
-            <option value="payment">Уменьшать платёж</option>
-          </select>
+          <select id="newCreditPrepayMode"><option value="term">Уменьшать срок</option><option value="payment">Уменьшать платёж</option></select>
         </div>
         <div class="field"><label>Комментарий</label><input id="newCreditComment" placeholder="Комментарий к кредиту" /></div>
         <div class="field"><label>&nbsp;</label><button class="primary" id="addCreditBtn" type="button">Добавить кредит</button></div>
@@ -908,10 +308,7 @@
         <div class="field"><label>Плановый платёж</label><input id="newFamilyScheduled" type="number" step="0.01" placeholder="0" /></div>
         <div class="field"><label>День месяца</label><input id="newFamilyDay" type="number" min="1" max="31" placeholder="1–31" /></div>
         <div class="field"><label>Досрочка</label>
-          <select id="newFamilyPrepayMode">
-            <option value="term">Уменьшать срок</option>
-            <option value="payment">Уменьшать платёж</option>
-          </select>
+          <select id="newFamilyPrepayMode"><option value="term">Уменьшать срок</option><option value="payment">Уменьшать платёж</option></select>
         </div>
         <div class="field"><label>Комментарий</label><input id="newFamilyComment" placeholder="Комментарий к займу" /></div>
         <div class="field"><label>&nbsp;</label><button class="primary" id="addFamilyBtn" type="button">Добавить займ</button></div>
@@ -936,10 +333,7 @@
             <option value="repayment">Возврат родственнику</option>
           </select>
         </div>
-        <div class="field">
-          <label>Обязательство</label>
-          <select id="newTxObligation"></select>
-        </div>
+        <div class="field"><label>Обязательство</label><select id="newTxObligation"></select></div>
         <div class="field"><label>Дата</label><input id="newTxDate" type="date" /></div>
         <div class="field"><label>Сумма</label><input id="newTxAmount" type="number" step="0.01" placeholder="0" /></div>
         <div class="field full"><label>Комментарий</label><input id="newTxNote" placeholder="Например: платёж по графику, досрочка, частичный возврат" /></div>
@@ -955,9 +349,7 @@
           <h2>История платежей</h2>
           <div class="subtitle">Фильтр по кредиту, цветные метки и детализация: сколько ушло в проценты и сколько в тело.</div>
         </div>
-        <div class="section-hint">
-          <select id="historyFilter"></select>
-        </div>
+        <div class="section-hint"><select id="historyFilter"></select></div>
       </div>
       <div class="tx-list" id="historyList"></div>
     </section>
@@ -983,7 +375,7 @@
       <div class="section-head">
         <div>
           <h2>Прогноз свободных денег</h2>
-          чный денежный поток.</div>
+          <div class="subtitle">Показывает, как по мере закрытия кредитов освобождается ежемесячный денежный поток.</div>
         </div>
       </div>
       <canvas id="forecastChart"></canvas>
@@ -1015,7 +407,10 @@
       <div class="section-head">
         <div>
           <h2>Проверка рефинансирования</h2>
-          <div class="subtitle">Сравнивает будущие платежи по текущему кредиту с вариантом рефиrefi-grid">
+          <div class="subtitle">Сравнивает будущие платежи по текущему кредиту с вариантом рефинансирования и показывает критическую ставку.</div>
+        </div>
+      </div>
+      <div class="refi-grid">
         <div class="field"><label>Кредит</label><select id="refiObligation"></select></div>
         <div class="field"><label>Новая сумма</label><input id="refiAmount" type="number" step="0.01" placeholder="0" /></div>
         <div class="field"><label>Новая ставка, %</label><input id="refiApr" type="number" step="0.01" placeholder="0" /></div>
@@ -1045,10 +440,7 @@
   <div class="modal-backdrop" id="editModalBackdrop" aria-hidden="true">
     <div class="modal">
       <h3>Корректировка платежа</h3>
-      <div class="subtitle">
-        Можно вручную подогнать разбиение платежа под банковское приложение.
-        Тело и проценты должны суммироваться в платёж.
-      </div>
+      <div class="subtitle">Можно вручную подогнать разбиение платежа под банковское приложение. Тело и проценты должны суммироваться в платёж.</div>
       <div class="form-grid" style="margin-top:0;">
         <div class="field"><label>Сумма платежа</label><input id="editTxAmount" type="number" step="0.01" /></div>
         <div class="field"><label>В проценты</label><input id="editTxInterest" type="number" step="0.01" /></div>
@@ -1073,40 +465,35 @@
       measurementId: "G-637GBQSDW6"
     };
 
-    const STORAGE_KEY = "credit_tracker_local_backup_v8";
+    const STORAGE_KEY = "credit_tracker_local_backup_v9";
     const FIRESTORE_PATH = { collection: "shared", doc: "data" };
     const MAX_FORECAST_MONTHS = 24;
 
-    const moneyFmt = new Intl.NumberFormat("ru-RU", {
-      style: "currency",
-      currency: "RUB",
-      maximumFractionDigits: 2
-    });
-
-    const fmtMoney = (v) => moneyFmt.format(Number.isFinite(Number(v)) ? Number(v) : 0);
-    const num = (v) => {
+    const moneyFmt = new Intl.NumberFormat("ru-RU", { style: "currency", currency: "RUB", maximumFractionDigits: 2 });
+    const fmtMoney = v => moneyFmt.format(Number.isFinite(Number(v)) ? Number(v) : 0);
+    const num = v => {
       const n = Number(String(v).replace(",", "."));
       return Number.isFinite(n) ? n : 0;
     };
     const uid = () => crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
     const todayISO = () => new Date().toISOString().slice(0, 10);
-    const parseDate = (v) => {
+    const parseDate = v => {
       if (!v) return null;
       const d = new Date(`${v}T00:00:00`);
       return Number.isNaN(d.getTime()) ? null : d;
     };
-    const toISODate = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
-    const monthStart = (d) => new Date(d.getFullYear(), d.getMonth(), 1);
-    const monthEnd = (d) => new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999);
+    const toISODate = d => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+    const monthStart = d => new Date(d.getFullYear(), d.getMonth(), 1);
+    const monthEnd = d => new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999);
     const addMonths = (d, m) => new Date(d.getFullYear(), d.getMonth() + m, d.getDate());
     const monthsBetween = (a, b) => Math.max(0, (b.getFullYear() - a.getFullYear()) * 12 + (b.getMonth() - a.getMonth()));
     const daysBetween = (a, b) => Math.max(0, Math.floor((b.getTime() - a.getTime()) / 86400000));
-    const clampDay = (v) => {
+    const clampDay = v => {
       const n = Math.floor(num(v));
       if (!Number.isFinite(n) || n < 1) return null;
       return Math.min(31, n);
     };
-    const esc = (v) => String(v ?? "")
+    const esc = v => String(v ?? "")
       .replaceAll("&", "&amp;")
       .replaceAll("<", "&lt;")
       .replaceAll(">", "&gt;")
@@ -1116,25 +503,15 @@
     const colorPool = ["#2563eb", "#7c3aed", "#059669", "#d97706", "#dc2626", "#0ea5e9", "#8b5cf6", "#14b8a6", "#f97316", "#4f46e5"];
 
     const stateTemplate = () => ({
-      version: 8,
+      version: 9,
       obligations: [],
       transactions: [],
       ui: {
         freeAmount: 5000,
         optimizeMode: "interest",
-        refi: {
-          obligationId: "",
-          amount: 0,
-          apr: 0,
-          termMonths: 36,
-          fee: 0,
-          monthlyFee: 0
-        }
+        refi: { obligationId: "", amount: 0, apr: 0, termMonths: 36, fee: 0, monthlyFee: 0 }
       },
-      meta: {
-        updatedAt: null,
-        source: "local"
-      }
+      meta: { updatedAt: null, source: "local" }
     });
 
     let state = stateTemplate();
@@ -1145,7 +522,6 @@
     let saveTimer = null;
     let localOnlyNoticeShown = false;
     let currentEditTxId = null;
-    let currentEditTxObligationId = null;
 
     const els = {
       syncPill: document.getElementById("syncPill"),
@@ -1205,10 +581,7 @@
       els.updatedPill.textContent = Number.isNaN(d.getTime()) ? "Последнее обновление: —" : `Последнее обновление: ${d.toLocaleString("ru-RU")}`;
     }
 
-    function saveLocal() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    }
-
+    function saveLocal() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
     function loadLocal() {
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
@@ -1231,10 +604,7 @@
       clearTimeout(saveTimer);
       saveTimer = setTimeout(async () => {
         try {
-          await docRef.set({
-            ...state,
-            serverUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
-          }, { merge: true });
+          await docRef.set({ ...state, serverUpdatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
           setSyncState("Синхронизировано", "green");
         } catch (e) {
           console.error(e);
@@ -1284,9 +654,7 @@
         amount: num(raw.amount ?? 0),
         kind: ["payment", "extra", "repayment"].includes(raw.kind) ? raw.kind : "payment",
         note: String(raw.note || raw.comment || ""),
-        parts: raw.parts && typeof raw.parts === "object"
-          ? { interest: num(raw.parts.interest), principal: num(raw.parts.principal) }
-          : null,
+        parts: raw.parts && typeof raw.parts === "object" ? { interest: num(raw.parts.interest), principal: num(raw.parts.principal) } : null,
         manual: !!raw.manual
       };
     }
@@ -1325,9 +693,6 @@
         base.ui.freeAmount = num(raw.ui.freeAmount ?? base.ui.freeAmount);
         base.ui.optimizeMode = raw.ui.optimizeMode === "payment" ? "payment" : "interest";
         base.ui.refi = { ...base.ui.refi, ...(raw.ui.refi || {}) };
-      } else {
-        if (raw.extraPayment !== undefined) base.ui.freeAmount = num(raw.extraPayment);
-        if (raw.strategy === "snowball") base.ui.optimizeMode = "payment";
       }
 
       base.meta.updatedAt = raw.meta?.updatedAt || null;
@@ -1362,10 +727,7 @@
     }
 
     function getTransactionsFor(id) {
-      return state.transactions
-        .filter(tx => tx.obligationId === id)
-        .slice()
-        .sort((a, b) => a.date.localeCompare(b.date));
+      return state.transactions.filter(tx => tx.obligationId === id).slice().sort((a, b) => a.date.localeCompare(b.date));
     }
 
     function getColorForObligation(id) {
@@ -1407,42 +769,33 @@
         const amount = Math.max(0, num(tx.amount));
         paid += amount;
 
-        let remaining = amount;
         let iPart = 0;
         let pPart = 0;
 
         if (tx.manual && tx.parts) {
           iPart = Math.max(0, Math.min(num(tx.parts.interest), interest, amount));
           pPart = Math.max(0, Math.min(num(tx.parts.principal), principal, amount - iPart));
-
           interest -= iPart;
           principal -= pPart;
-          remaining -= (iPart + pPart);
+        } else if (ob.kind === "credit") {
+          let remaining = amount;
+          iPart = Math.min(interest, remaining);
+          interest -= iPart;
+          remaining -= iPart;
+          pPart = Math.min(principal, remaining);
+          principal -= pPart;
         } else {
-          if (ob.kind === "credit") {
-            iPart = Math.min(interest, remaining);
-            interest -= iPart;
-            remaining -= iPart;
-
-            pPart = Math.min(principal, remaining);
-            principal -= pPart;
-            remaining -= pPart;
-          } else {
-            pPart = Math.min(principal, remaining);
-            principal -= pPart;
-            remaining -= pPart;
-          }
+          pPart = Math.min(principal, amount);
+          principal -= pPart;
         }
 
         interestPaid += iPart;
         principalPaid += pPart;
-
         const balanceAfter = Math.max(0, principal + interest);
-        const autoParts = tx.parts && !tx.manual ? { interest: iPart, principal: pPart } : null;
 
         entries.push({
           ...tx,
-          parts: autoParts || tx.parts || { interest: iPart, principal: pPart },
+          parts: tx.manual && tx.parts ? tx.parts : { interest: iPart, principal: pPart },
           balanceAfter
         });
       }
@@ -1455,28 +808,13 @@
       const nextDue = nextDueDate(ob, cutoff);
       const plannedEnd = plannedEndDate(ob);
 
-      return {
-        principal,
-        interest,
-        balance,
-        paid,
-        interestPaid,
-        principalPaid,
-        entries,
-        currentPayment,
-        monthsLeft,
-        nextDue,
-        plannedEnd
-      };
+      return { principal, interest, balance, paid, interestPaid, principalPaid, entries, currentPayment, monthsLeft, nextDue, plannedEnd };
     }
 
     function nextDueDate(ob, now = new Date()) {
       const pay = Math.max(0, num(ob.scheduledPayment || ob.minPayment || 0));
       if (!pay) return null;
-
-      if (!ob.paymentDay) {
-        return toISODate(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 30));
-      }
+      if (!ob.paymentDay) return toISODate(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 30));
 
       const day = clampDay(ob.paymentDay);
       if (!day) return null;
@@ -1499,78 +837,83 @@
       return state.obligations.reduce((sum, ob) => sum + computeLedger(ob, date).balance, 0);
     }
 
-    function projectObligationBalance(ob, ledger, monthsAhead) {
-      if (!ledger) return 0;
+    function simulateFuture(ob, ledger, months, extra = 0, prepayMode = "term") {
+      if (!ledger) return { totalInterest: 0, totalPaid: 0, monthsToZero: 0, payment: 0 };
+
       let principal = Math.max(0, ledger.principal);
       let interest = Math.max(0, ledger.interest);
-      let balance = Math.max(0, ledger.balance);
-      const payment = Math.max(0, ledger.currentPayment || ob.scheduledPayment || ob.minPayment || 0);
+      let totalInterest = 0;
+      let totalPaid = 0;
+      let monthsToZero = ledger.balance <= 0 ? 0 : null;
+      let payment = Math.max(0, ledger.currentPayment || ob.scheduledPayment || ob.minPayment || 0);
 
-      for (let i = 1; i <= monthsAhead; i++) {
-        if (ob.kind === "credit" && num(ob.apr) > 0 && principal > 0) {
-          interest += principal * (num(ob.apr) / 100 / 12);
-        }
+      function pay(amount) {
+        let remaining = Math.max(0, amount);
+        let applied = 0;
 
-        let remaining = payment;
         if (ob.kind === "credit") {
           const usedI = Math.min(interest, remaining);
           interest -= usedI;
           remaining -= usedI;
+          applied += usedI;
 
           const usedP = Math.min(principal, remaining);
           principal -= usedP;
           remaining -= usedP;
+          applied += usedP;
         } else {
           const usedP = Math.min(principal, remaining);
           principal -= usedP;
           remaining -= usedP;
+          applied += usedP;
         }
 
-        balance = Math.max(0, principal + interest);
-        if (balance <= 0) break;
+        totalPaid += applied;
       }
 
-      return balance;
+      if (extra > 0) {
+        pay(extra);
+        if (prepayMode === "payment") payment = Math.max(0, payment - extra);
+      }
+
+      for (let m = 1; m <= months; m++) {
+        if (ob.kind === "credit" && num(ob.apr) > 0 && principal > 0) {
+          const mi = principal * (num(ob.apr) / 100 / 12);
+          interest += mi;
+          totalInterest += mi;
+        }
+
+        pay(payment);
+        const balance = Math.max(0, principal + interest);
+        if (balance <= 0) {
+          monthsToZero = monthsToZero ?? m;
+          break;
+        }
+        if (monthsToZero === null) monthsToZero = m;
+      }
+
+      if (monthsToZero === null) monthsToZero = months;
+      return { totalInterest, totalPaid, monthsToZero, payment };
     }
 
     function buildPortfolioSeries() {
       const now = new Date();
       const labels = ["Сейчас"];
       const series = [0];
-      const horizon = MAX_FORECAST_MONTHS;
+      const closures = state.obligations.map(ob => {
+        const ledger = computeLedger(ob, now);
+        if (!ledger || ledger.balance <= 0) return null;
+        const sim = simulateFuture(ob, ledger, ob.termMonths || MAX_FORECAST_MONTHS, 0, ob.prepayMode);
+        return { freedMonthly: Math.max(0, ledger.currentPayment), monthsToZero: Math.max(0, Math.floor(sim.monthsToZero || MAX_FORECAST_MONTHS)) };
+      }).filter(Boolean);
 
-      const ledgers = new Map();
-      state.obligations.forEach(ob => ledgers.set(ob.id, computeLedger(ob, now)));
-
-      const closures = state.obligations
-        .map(ob => {
-          const ledger = ledgers.get(ob.id);
-          if (!ledger || ledger.balance <= 0) {
-            return null;
-          }
-          const sim = simulateFuture(ob, ledger, ob.termMonths || MAX_FORECAST_MONTHS, 0, ob.prepayMode);
-          return {
-            ob,
-            freedMonthly: Math.max(0, ledger.currentPayment),
-            monthsToZero: Math.max(0, Math.floor(sim.monthsToZero || horizon))
-          };
-        })
-        .filter(Boolean);
-
-      for (let m = 1; m <= horizon; m++) {
+      for (let m = 1; m <= MAX_FORECAST_MONTHS; m++) {
         const freed = closures.reduce((sum, item) => sum + (item.monthsToZero <= m ? item.freedMonthly : 0), 0);
         labels.push(`+${m}м`);
         series.push(freed);
       }
 
       return { labels, series, currentIndex: 0 };
-    }
-
-    function simulateFuture(omonthsToZero = m;
-      }
-
-      if (monthsToZero === null) monthsToZero = months;
-      return { totalInterest, totalPaid, monthsToZero, payment };
     }
 
     function buildRecommendations(ledgers) {
@@ -1580,9 +923,7 @@
         .map(ob => ({ ob, ledger: ledgers.get(ob.id) }))
         .filter(x => x.ledger && x.ledger.balance > 0);
 
-      if (!candidates.length) {
-        return { amount, interest: null, payment: null };
-      }
+      if (!candidates.length) return { amount, interest: null, payment: null };
 
       const scored = candidates.map(({ ob, ledger }) => {
         const base = simulateFuture(ob, ledger, ob.termMonths || MAX_FORECAST_MONTHS, 0, ob.prepayMode);
@@ -1590,8 +931,6 @@
         return {
           ob,
           ledger,
-          base,
-          withExtra,
           interestSavings: base.totalInterest - withExtra.totalInterest,
           monthsSaved: Math.max(0, base.monthsToZero - withExtra.monthsToZero),
           balance: ledger.balance,
@@ -1609,14 +948,7 @@
       return state.obligations
         .map(ob => ({ ob, ledger: ledgers.get(ob.id) }))
         .filter(({ ob, ledger }) => ledger && ledger.balance > 0 && (ob.scheduledPayment > 0 || ob.minPayment > 0))
-        .map(({ ob, ledger }) => ({
-          id: ob.id,
-          title: ob.name,
-          lender: ob.lender || "",
-          kind: ob.kind,
-          date: ledger.nextDue,
-          amount: ledger.currentPayment
-        }))
+        .map(({ ob, ledger }) => ({ id: ob.id, title: ob.name, lender: ob.lender || "", kind: ob.kind, date: ledger.nextDue, amount: ledger.currentPayment }))
         .filter(x => x.date)
         .sort((a, b) => String(a.date).localeCompare(String(b.date)));
     }
@@ -1627,22 +959,10 @@
       let title = "Точка старта";
       let text = "Вы только входите в траекторию снижения долгов. Регулярность платежей сейчас важнее всего.";
 
-      if (progress >= 15) {
-        title = "Движение заметно";
-        text = `Вы уже внесли ${fmtMoney(totalPaidFromHistory)}. Это уже реальный прогресс.`;
-      }
-      if (progress >= 35) {
-        title = "Сильный этап";
-        text = `Снижение уже хорошо видно: внесено ${fmtMoney(totalPaidFromHistory)}. Дальше каждый досрочный платёж ускоряет выход.`;
-      }
-      if (progress >= 60) {
-        title = "Основная часть пути пройдена";
-        text = `Вы закрыли большую часть долговой нагрузки. Осталось удержать темп и не терять фокус.`;
-      }
-      if (progress >= 85) {
-        title = "Финиш уже рядом";
-        text = `До заметного освобождения платежей совсем немного. Это уже зона, где досрочка особенно чувствуется.`;
-      }
+      if (progress >= 15) { title = "Движение заметно"; text = `Вы уже внесли ${fmtMoney(totalPaidFromHistory)}. Это уже реальный прогресс.`; }
+      if (progress >= 35) { title = "Сильный этап"; text = `Снижение уже хорошо видно: внесено ${fmtMoney(totalPaidFromHistory)}. Дальше каждый досрочный платёж ускоряет выход.`; }
+      if (progress >= 60) { title = "Основная часть пути пройдена"; text = `Вы закрыли большую часть долговой нагрузки. Осталось удержать темп и не терять фокус.`; }
+      if (progress >= 85) { title = "Финиш уже рядом"; text = `До заметного освобождения платежей совсем немного. Это уже зона, где досрочка особенно чувствуется.`; }
 
       return { progress, totalPaidFromHistory, title, text };
     }
@@ -1651,7 +971,6 @@
       let lo = 0;
       let hi = 60;
       let ans = null;
-
       for (let i = 0; i < 40; i++) {
         const mid = (lo + hi) / 2;
         const pmt = annuityPayment(amount, mid, termMonths);
@@ -1663,7 +982,6 @@
           lo = mid;
         }
       }
-
       if (ans === null || ans < 0.01) return null;
       return ans;
     }
@@ -1678,14 +996,49 @@
       const currentBalance = ledger ? ledger.balance : num(selected.initialPrincipal);
       const monthsLeft = ledger?.monthsLeft || selected.termMonths || MAX_FORECAST_MONTHS;
       const currentScenario = simulateFuture(selected, ledger, monthsLeft, 0, selected.prepayMode);
-      const currentTotalCost = currentScenario.totalPaid;
+      const currentTotalCost = currentScenario.totalPaid + currentScenario.totalInterest;
 
       const newAmount = num(state.ui.refi.amount || currentBalance);
       const newApr = num(state.ui.refi.apr || selected.apr);
       const newTerm = Math.max(1, Math.floor(num(state.ui.refi.termMonths || monthsLeft)));
       const fee = num(state.ui.refi.fee || 0);
       const monthlyFee = num(state.ui.refi.monthlyFee || 0);
-      const newPayment = annuityPayment(newAmount, newApr, newTerm)">
+      const newPayment = annuityPayment(newAmount, newApr, newTerm);
+      const newTotalCost = (newPayment * newTerm) + (monthlyFee * newTerm) + fee;
+      const savings = currentTotalCost - newTotalCost;
+      const criticalRate = findCriticalRate(newAmount, newTerm, fee, monthlyFee, currentTotalCost);
+      const verdict = savings > 0 ? "Выгодно" : savings < 0 ? "Невыгодно" : "Почти без разницы";
+      const color = savings > 0 ? "green" : savings < 0 ? "amber" : "blue";
+
+      return { selected, currentBalance, monthsLeft, currentTotalCost, newAmount, newApr, newTerm, fee, monthlyFee, newTotalCost, savings, criticalRate, verdict, color };
+    }
+
+    function computeDerived() {
+      const ledgers = new Map();
+      const totals = { balance: 0, principal: 0, interest: 0, scheduled: 0, initial: 0, family: 0, activeCount: 0, creditCount: 0, familyCount: 0 };
+      state.obligations.forEach(ob => {
+        const ledger = computeLedger(ob, new Date());
+        ledgers.set(ob.id, ledger);
+        totals.balance += ledger.balance;
+        totals.principal += ledger.principal;
+        totals.interest += ledger.interest;
+        totals.scheduled += ledger.currentPayment;
+        totals.initial += Math.max(0, num(ob.initialPrincipal));
+        if (ob.kind === "family") totals.family += ledger.balance;
+        if (ob.kind === "credit") totals.creditCount++; else totals.familyCount++;
+        if (ledger.balance > 0) totals.activeCount++;
+      });
+      return { totals, ledgers, seriesPack: buildPortfolioSeries(), rec: buildRecommendations(ledgers), upcoming: buildUpcoming(ledgers), support: buildSupport(totals), refi: buildRefi(ledgers) };
+    }
+
+    function renderSummary() {
+      const t = derived.totals;
+      const creditCount = state.obligations.filter(o => o.kind === "credit").length;
+      const familyCount = state.obligations.filter(o => o.kind === "family").length;
+      const avgRate = creditCount ? (state.obligations.filter(o => o.kind === "credit").reduce((s, o) => s + num(o.apr), 0) / creditCount) : 0;
+
+      els.summaryGrid.innerHTML = `
+        <div class="metric blue" data-summary="balance">
           <div class="label">Общий остаток</div>
           <div class="value">${fmtMoney(t.balance)}</div>
           <div class="sub">Кредиты + займы родственникам</div>
@@ -1733,14 +1086,7 @@
         buckets.active.push({ name: label, value: ledger.balance > 0 ? 1 : 0, color });
       });
 
-      const mapId = {
-        balance: "detail-balance",
-        principal: "detail-principal",
-        interest: "detail-interest",
-        scheduled: "detail-scheduled",
-        active: "detail-active"
-      };
-
+      const mapId = { balance: "detail-balance", principal: "detail-principal", interest: "detail-interest", scheduled: "detail-scheduled", active: "detail-active" };
       Object.entries(buckets).forEach(([key, list]) => {
         const el = document.getElementById(mapId[key]);
         if (!el) return;
@@ -1763,24 +1109,13 @@
     function renderObligationList(kind) {
       const container = kind === "credit" ? els.creditList : els.familyList;
       const items = state.obligations.filter(o => o.kind === kind);
-
       if (!items.length) {
         container.innerHTML = `<div class="empty">Пока нет записей. Добавьте первую карточку ниже.</div>`;
         return;
       }
 
       container.innerHTML = items.map(ob => {
-        const ledger = derived.ledgers.get(ob.id) || {
-          principal: 0,
-          interest: 0,
-          balance: 0,
-          paid: 0,
-          currentPayment: 0,
-          nextDue: null,
-          monthsLeft: null,
-          plannedEnd: null
-        };
-
+        const ledger = derived.ledgers.get(ob.id) || { principal: 0, interest: 0, balance: 0, paid: 0, currentPayment: 0, nextDue: null, monthsLeft: null, plannedEnd: null };
         const progress = ob.initialPrincipal > 0 ? Math.max(0, Math.min(100, ((ob.initialPrincipal - ledger.balance) / ob.initialPrincipal) * 100)) : 0;
         const payoffText = ledger.balance <= 0 ? "Закрыт" : `${ledger.monthsLeft || MAX_FORECAST_MONTHS} мес.`;
         const remainingPlan = plannedMonthsLeft(ob, new Date());
@@ -1892,11 +1227,7 @@
 
     function renderHistory() {
       const filter = els.historyFilter.value || "all";
-      const txs = state.transactions
-        .filter(tx => filter === "all" ? true : tx.obligationId === filter)
-        .slice()
-        .sort((a, b) => b.date.localeCompare(a.date));
-
+      const txs = state.transactions.filter(tx => filter === "all" ? true : tx.obligationId === filter).slice().sort((a, b) => b.date.localeCompare(a.date));
       if (!txs.length) {
         els.historyList.innerHTML = `<div class="empty">История по выбранному фильтру пока пустая.</div>`;
         return;
@@ -1933,7 +1264,6 @@
         els.upcomingList.innerHTML = `<div class="empty">Пока нет будущих дат платежей. Укажите день месяца и плановый платёж в карточке.</div>`;
         return;
       }
-
       els.upcomingList.innerHTML = derived.upcoming.slice(0, 8).map(item => `
         <div class="tx-item">
           <div class="left">
@@ -1948,7 +1278,6 @@
     function renderRecommendations() {
       const rec = derived.rec;
       const amount = rec.amount;
-
       if (!amount || amount <= 0) {
         els.recommendations.innerHTML = `<div class="empty">Введите свободную сумму, и система предложит лучший сценарий её использования.</div>`;
         return;
@@ -2027,9 +1356,8 @@
         return;
       }
 
-      const cls = r.color === "green" ? "green" : "";
-      els.refiResult.className = `support-box ${cls}`;
-      const threshold = r.criticalRate != null ? `${r.criticalRate.toFixed(2)}%` : "—";
+      els.refiResult.className = `support-box ${r.color === "green" ? "green" : ""}`;
+      const threshold = r.criticalRate != null ? `${r.criticalRate.toFixed(2)}%` : "не найдена";
       els.refiResult.innerHTML = `
         <div class="headline">${r.verdict}</div>
         <div class="text">
@@ -2039,7 +1367,7 @@
         </div>
         <div class="mini-stats" style="margin-top:12px;">
           <div class="mini-stat"><div class="k">Выгода / убыток</div><div class="v">${fmtMoney(r.savings)}</div></div>
-          <div class="mini-stat"><div class="k">Критическая ставка</div><div class="v">${threshold !== "—" ? threshold : "не найдена"}</div></div>
+          <div class="mini-stat"><div class="k">Критическая ставка</div><div class="v">${threshold}</div></div>
           <div class="mini-stat"><div class="k">Срок нового кредита</div><div class="v">${r.newTerm} мес.</div></div>
         </div>
         <div class="text" style="margin-top:10px;">Если ставка нового кредита ниже критической, рефинанс обычно выгоден. Если выше — чаще проще гасить старое обязательство.</div>
@@ -2057,19 +1385,10 @@
       return {
         responsive: true,
         maintainAspectRatio: false,
-        interaction: {
-          mode: "nearest",
-          intersect: false
-        },
+        interaction: { mode: "nearest", intersect: false },
         scales: {
-          y: {
-            beginAtZero: true,
-            grid: { color: "rgba(18,32,51,.08)" },
-            ticks: { callback: v => fmtMoney(v) }
-          },
-          x: {
-            grid: { display: false }
-          }
+          y: { beginAtZero: true, grid: { color: "rgba(18,32,51,.08)" }, ticks: { callback: v => fmtMoney(v) } },
+          x: { grid: { display: false } }
         },
         plugins: {
           legend: { display: false },
@@ -2084,26 +1403,11 @@
     }
 
     function chartDoughnutOptions() {
-      return {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: "62%",
-        plugins: {
-          legend: {
-            position: "bottom",
-            labels: {
-              usePointStyle: true,
-              boxWidth: 10,
-              padding: 18
-            }
-          }
-        }
-      };
+      return { responsive: true, maintainAspectRatio: false, cutout: "62%", plugins: { legend: { position: "bottom", labels: { usePointStyle: true, boxWidth: 10, padding: 18 } } } };
     }
 
     function renderCharts() {
       const pack = derived.seriesPack;
-
       if (!charts.forecast) {
         charts.forecast = new Chart(els.forecastChart, {
           type: "line",
@@ -2135,27 +1439,23 @@
         charts.breakdown = new Chart(els.breakdownChart, {
           type: "doughnut",
           data: {
-            labels:исленные проценты", "Долги родственникам"],
+            labels: ["Тело кредитов", "Начисленные проценты", "Долги родственникам"],
             datasets: [{
-              data: [
-                Math.max(0, derived.totals.principal),
-                Math.max(0, derived.totals.interest),
-                Math.max(0, derived.totals.family)
-              ],
+              data: [Math.max(0, derived.totals.principal), Math.max(0, derived.totals.interest), Math.max(0, derived.totals.family)],
               borderWidth: 0,
-              backgroundColor: [
-                "rgba(37,99,235,.85)",
-                "rgba(217,119,6,.85)",
-                "rgba(5,150,105,.85)"
-              ]
+              backgroundColor: ["rgba(37,99,235,.85)", "rgba(217,119,6,.85)", "rgba(5,150,105,.85)"]
             }]
           },
           options: chartDoughnutOptions()
         });
       } else {
-        charts.breakdown.data.datasett12 = s[idx + 12] ?? s[s.length - 1] ?? 0;
-      const at24 = s[idx + 24] ?? s[s.length - 1] ?? 0;
+        charts.breakdown.data.datasets[0].data = [Math.max(0, derived.totals.principal), Math.max(0, derived.totals.interest), Math.max(0, derived.totals.family)];
+        charts.breakdown.update();
+      }
 
+      const s = derived.seriesPack.series;
+      const at12 = s[12] ?? s[s.length - 1] ?? 0;
+      const at24 = s[24] ?? s[s.length - 1] ?? 0;
       els.forecastStats.innerHTML = `
         <div class="mini-stat"><div class="k">Сейчас</div><div class="v">${fmtMoney(derived.totals.balance)}</div></div>
         <div class="mini-stat"><div class="k">Через 12 мес.</div><div class="v">${fmtMoney(at12)}</div></div>
@@ -2163,14 +1463,16 @@
       `;
 
       els.breakdownLegend.innerHTML = `
-        <div cla5,.85)"></span><span class="legend-name">Тело кредитов</span></div>
-          <span class="legend-value">${fmtMoney(derived.totals.principal)}</span>
-        </div>
-        <div class="legend-row">
-    ate.obligations.length
+        <div class="legend-row"><div class="legend-left"><span class="dot" style="background:rgba(37,99,235,.85)"></span><span class="legend-name">Тело кредитов</span></div><span class="legend-value">${fmtMoney(derived.totals.principal)}</span></div>
+        <div class="legend-row"><div class="legend-left"><span class="dot" style="background:rgba(217,119,6,.85)"></span><span class="legend-name">Начисленные проценты</span></div><span class="legend-value">${fmtMoney(derived.totals.interest)}</span></div>
+        <div class="legend-row"><div class="legend-left"><span class="dot" style="background:rgba(5,150,105,.85)"></span><span class="legend-name">Долги родственникам</span></div><span class="legend-value">${fmtMoney(derived.totals.family)}</span></div>
+      `;
+    }
+
+    function renderTxOptions() {
+      const options = state.obligations.length
         ? state.obligations.map(ob => `<option value="${ob.id}">${esc(ob.name)} (${ob.kind === "credit" ? "кредит" : "родственник"})</option>`).join("")
         : `<option value="">Сначала добавьте обязательство</option>`;
-
       els.newTxObligation.innerHTML = options;
       els.refiObligation.innerHTML = state.obligations.filter(o => o.kind === "credit").map(ob => `<option value="${ob.id}">${esc(ob.name)}</option>`).join("") || `<option value="">Нет кредитов</option>`;
       els.historyFilter.innerHTML = `<option value="all">Все кредиты</option>` + state.obligations.map(ob => `<option value="${ob.id}">${esc(ob.name)}</option>`).join("");
@@ -2194,7 +1496,17 @@
       if (!docRef) {
         setSyncState("Локальный режим", "amber");
         if (!localOnlyNoticeShown) {
-          setNotice("Firebase ещё не подключён, данные сохраняются локальn) els.refiObligation.value = state.ui.refi.obligationId || els.refiObligation.value || "";
+          setNotice("Firebase ещё не подключён, данные сохраняются локально в этом браузере.", "warn");
+          localOnlyNoticeShown = true;
+        }
+      }
+
+      const r = state.ui.refi || {};
+      if (els.refiObligation && (!r.obligationId || !els.refiObligation.querySelector(`option[value="${r.obligationId}"]`))) {
+        const firstCredit = state.obligations.find(o => o.kind === "credit");
+        if (firstCredit) state.ui.refi.obligationId = firstCredit.id;
+      }
+      if (els.refiObligation) els.refiObligation.value = state.ui.refi.obligationId || els.refiObligation.value || "";
       if (els.refiAmount && !els.refiAmount.value) els.refiAmount.value = state.ui.refi.amount || "";
       if (els.refiApr && !els.refiApr.value) els.refiApr.value = state.ui.refi.apr || "";
       if (els.refiTerm && !els.refiTerm.value) els.refiTerm.value = state.ui.refi.termMonths || "";
@@ -2214,9 +1526,7 @@
       const principal = num(document.getElementById(`${prefix}Principal`).value);
       const apr = kind === "credit" ? num(document.getElementById("newCreditApr").value) : 0;
       const minPayment = kind === "credit" ? num(document.getElementById("newCreditMinPayment").value) : 0;
-      const scheduledPayment = kind === "credit"
-        ? (num(document.getElementById("newCreditScheduled").value) || minPayment)
-        : num(document.getElementById("newFamilyScheduled").value);
+      const scheduledPayment = kind === "credit" ? (num(document.getElementById("newCreditScheduled").value) || minPayment) : num(document.getElementById("newFamilyScheduled").value);
       const paymentDay = clampDay(kind === "credit" ? document.getElementById("newCreditDay").value : document.getElementById("newFamilyDay").value);
       const prepayMode = kind === "credit" ? document.getElementById("newCreditPrepayMode").value : document.getElementById("newFamilyPrepayMode").value;
       const comment = document.getElementById(`${prefix}Comment`).value.trim();
@@ -2229,21 +1539,9 @@
       }
 
       state.obligations.unshift({
-        id: uid(),
-        kind,
+        id: uid(), kind,
         name: name || (kind === "credit" ? "Новый кредит" : "Новый займ"),
-        lender,
-        startDate,
-        termMonths: computedTerm,
-        endDate,
-        initialPrincipal: principal,
-        apr,
-        minPayment,
-        scheduledPayment,
-        paymentDay,
-        prepayMode,
-        comment,
-        active: true
+        lender, startDate, termMonths: computedTerm, endDate, initialPrincipal: principal, apr, minPayment, scheduledPayment, paymentDay, prepayMode, comment, active: true
       });
 
       persist();
@@ -2254,7 +1552,6 @@
     function saveObligation(id) {
       const idx = state.obligations.findIndex(x => x.id === id);
       if (idx < 0) return;
-
       const prev = state.obligations[idx];
       const kind = document.getElementById(`kind-${id}`).value === "family" ? "family" : "credit";
       const termRaw = num(document.getElementById(`term-${id}`)?.value || 0);
@@ -2269,9 +1566,7 @@
         name: (document.getElementById(`name-${id}`)?.value || "").trim() || prev.name,
         lender: (document.getElementById(`lender-${id}`)?.value || "").trim(),
         startDate,
-        termMonths: termRaw > 0
-          ? Math.max(1, Math.floor(termRaw))
-          : (prev.termMonths ?? (endRaw ? monthsBetween(monthStart(start), monthStart(parseDate(endRaw) || start)) : null)),
+        termMonths: termRaw > 0 ? Math.max(1, Math.floor(termRaw)) : (prev.termMonths ?? (endRaw ? monthsBetween(monthStart(start), monthStart(parseDate(endRaw) || start)) : null)),
         endDate: endRaw,
         initialPrincipal: num(document.getElementById(`principal-${id}`)?.value) || prev.initialPrincipal,
         apr: kind === "credit" ? (num(document.getElementById(`apr-${id}`)?.value) || prev.apr || 0) : 0,
@@ -2303,7 +1598,6 @@
       let remaining = Math.max(0, amount);
       let interestPart = 0;
       let principalPart = 0;
-
       if (ob.kind === "credit") {
         interestPart = Math.min(ledger.interest, remaining);
         remaining -= interestPart;
@@ -2311,7 +1605,6 @@
       } else {
         principalPart = Math.min(ledger.principal, remaining);
       }
-
       return { interest: interestPart, principal: principalPart };
     }
 
@@ -2321,7 +1614,6 @@
         setNotice("Сначала выберите обязательство для платежа.", "warn");
         return;
       }
-
       const amount = amountOverride != null ? num(amountOverride) : num(document.getElementById("newTxAmount").value);
       if (!amount || amount <= 0) {
         setNotice("Введите сумму платежа.", "warn");
@@ -2367,10 +1659,7 @@
       document.getElementById("newTxAmount").value = state.ui.freeAmount || 0;
       document.getElementById("newTxNote").value = `Платёж по ${ob.name}`;
       setNotice(`Заполнена форма для «${ob.name}».`, "good");
-      window.scrollTo({
-        top: document.getElementById("txForm").getBoundingClientRect().top + window.scrollY - 12,
-        behavior: "smooth"
-      });
+      window.scrollTo({ top: document.getElementById("txForm").getBoundingClientRect().top + window.scrollY - 12, behavior: "smooth" });
     }
 
     function toggleOptimizeMode() {
@@ -2384,19 +1673,15 @@
       const rec = derived.rec;
       const amount = rec.amount;
       const target = state.ui.optimizeMode === "interest" ? rec.interest : rec.payment;
-
       if (!target) {
         setNotice("Нечего применять: нет активных обязательств.", "warn");
         return;
       }
-
       els.newTxObligation.value = target.ob.id;
       els.newTxDate.value = todayISO();
       document.getElementById("newTxAmount").value = amount;
       els.newTxKind.value = target.ob.kind === "family" ? "repayment" : (state.ui.optimizeMode === "interest" ? "extra" : "payment");
-      document.getElementById("newTxNote").value = state.ui.optimizeMode === "interest"
-        ? "Свободная сумма для снижения переплаты"
-        : "Свободная сумма для снижения регулярного платежа";
+      document.getElementById("newTxNote").value = state.ui.optimizeMode === "interest" ? "Свободная сумма для снижения переплаты" : "Свободная сумма для снижения регулярного платежа";
       addTransaction(els.newTxKind.value, target.ob.id, amount);
     }
 
@@ -2440,7 +1725,6 @@
       const tx = state.transactions.find(t => t.id === id);
       if (!tx) return;
       currentEditTxId = id;
-      currentEditTxObligationId = tx.obligationId;
       els.editTxAmount.value = tx.amount;
       els.editTxNote.value = tx.note || "";
       els.editTxInterest.value = (tx.parts?.interest ?? 0).toFixed(2);
@@ -2451,7 +1735,6 @@
 
     function closeEditTx() {
       currentEditTxId = null;
-      currentEditTxObligationId = null;
       els.editModalBackdrop.classList.remove("open");
       els.editModalBackdrop.setAttribute("aria-hidden", "true");
     }
@@ -2484,97 +1767,145 @@
       setNotice("Платёж обновлён вручную.", "good");
     }
 
-    function bindControls() {
-      document.addEventListener("click", e => {
-        const btn = e.target.closest("[data-save-obligation]");
-        if (btn) saveObligation(btn.dataset.saveObligation);
-
-        const metric = e.target.closest("[data-summary]");
-        if (metric) toggleSummaryDetail(metric.dataset.summary);
-      });
-
-      els.newCreditStart.value = todayISO();
-      els.newFamilyStart.value = todayISO();
-      els.newTxDate.value = todayISO();
-      els.freeAmount.value = state.ui.freeAmount;
-      els.optimizeMode.value = state.ui.optimizeMode;
-
-      on("addCreditBtn", "click", () => addObligation("credit"));
-      on("addFamilyBtn", "click", () => addObligation("family"));
-      on("addTxBtn", "click", () => addTransaction());
-      on("applyFreeBtn", "click", () => applyRecommendedExtra());
-      on("exportBtn", "click", exportJSON);
-      on("importBtn", "click", importJSON);
-      on("resetBtn", "click", resetAll);
-      on("freeAmount", "input", () => {
-        state.ui.freeAmount = num(els.freeAmount.value);
-        persist();
-        renderAll();
-      });
-      on("optimizeMode", "change", () => {
-        state.ui.optimizeMode = els.optimizeMode.value === "payment" ? "payment" : "interest";
-        persist();
-        renderAll();
-      });
-      on("historyFilter", "change", renderHistory);
-      on("calcRefiBtn", "click", () => {
-        const selected = els.refiObligation.value || (state.obligations.find(o => o.kind === "credit")?.id || "");
-        state.ui.refi.obligationId = selected;
-        state.ui.refi.amount = num(els.refiAmount.value);
-        state.ui.refi.apr = num(els.refiApr.value);
-        state.ui.refi.termMonths = Math.max(1, Math.floor(num(els.refiTerm.value || 0))) || 36;
-        state.ui.refi.fee = num(els.refiFee.value);
-        state.ui.refi.monthlyFee = num(els.refiMonthlyFee.value);
-        persist();
-        renderAll();
-      });
-      on("refiObligation", "change", () => {
-        state.ui.refi.obligationId = els.refiObligation.value;
-        const ob = state.obligations.find(o => o.id === state.ui.refi.obligationId);
-        if (ob) {
-          const ledger = derived?.ledgers?.get(ob.id);
-          const balance = ledger?.balance ?? ob.initialPrincipal;
-          els.refiAmount.value = balance.toFixed(2);
-          els.refiApr.value = ob.apr;
-          els.refiTerm.value = ob.termMonths || ledger?.monthsLeft || 36;
-          state.ui.refi.amount = balance;
-          state.ui.refi.apr = ob.apr;
-          state.ui.refi.termMonths = ob.termMonths || ledger?.monthsLeft || 36;
-          persist();
-          renderAll();
-        }
-      });
-
-      on("cancelEditTx", "click", closeEditTx);
-      on("saveEditTx", "click", saveEditTx);
-      els.editModalBackdrop.addEventListener("click", e => {
-        if (e.target === els.editModalBackdrop) closeEditTx();
-      });
+    function renderHistoryFilterOptions() {
+      els.historyFilter.innerHTML = `<option value="all">Все кредиты</option>` + state.obligations.map(ob => `<option value="${ob.id}">${esc(ob.name)}</option>`).join("");
     }
 
-    async function initFirebase() {
+    function renderForecastNotes() {
+      // intentionally empty, placeholder for future inline annotations
+    }
+
+    function renderForecastChartIfNeeded() {
+      // placeholder to keep flow readable
+    }
+
+    function renderCharts() {
+      const pack = derived.seriesPack;
+      if (!charts.forecast) {
+        charts.forecast = new Chart(els.forecastChart, {
+          type: "line",
+          data: {
+            labels: pack.labels,
+            datasets: [{
+              label: "Свободный денежный поток",
+              data: pack.series,
+              tension: 0.15,
+              fill: true,
+              borderWidth: 3,
+              pointRadius: 3,
+              pointHoverRadius: 6,
+              pointBackgroundColor: "#2563eb",
+              pointBorderColor: "#2563eb",
+              borderColor: "#2563eb",
+              backgroundColor: "rgba(37,99,235,.12)"
+            }]
+          },
+          options: chartLineOptions()
+        });
+      } else {
+        charts.forecast.data.labels = pack.labels;
+        charts.forecast.data.datasets[0].data = pack.series;
+        charts.forecast.update();
+      }
+
+      if (!charts.breakdown) {
+        charts.breakdown = new Chart(els.breakdownChart, {
+          type: "doughnut",
+          data: {
+            labels: ["Тело кредитов", "Начисленные проценты", "Долги родственникам"],
+            datasets: [{
+              data: [Math.max(0, derived.totals.principal), Math.max(0, derived.totals.interest), Math.max(0, derived.totals.family)],
+              borderWidth: 0,
+              backgroundColor: ["rgba(37,99,235,.85)", "rgba(217,119,6,.85)", "rgba(5,150,105,.85)"]
+            }]
+          },
+          options: chartDoughnutOptions()
+        });
+      } else {
+        charts.breakdown.data.datasets[0].data = [Math.max(0, derived.totals.principal), Math.max(0, derived.totals.interest), Math.max(0, derived.totals.family)];
+        charts.breakdown.update();
+      }
+
+      const s = derived.seriesPack.series;
+      const at12 = s[12] ?? s[s.length - 1] ?? 0;
+      const at24 = s[24] ?? s[s.length - 1] ?? 0;
+      els.forecastStats.innerHTML = `
+        <div class="mini-stat"><div class="k">Сейчас</div><div class="v">${fmtMoney(derived.totals.balance)}</div></div>
+        <div class="mini-stat"><div class="k">Через 12 мес.</div><div class="v">${fmtMoney(at12)}</div></div>
+        <div class="mini-stat"><div class="k">Через 24 мес.</div><div class="v">${fmtMoney(at24)}</div></div>
+      `;
+
+      els.breakdownLegend.innerHTML = `
+        <div class="legend-row"><div class="legend-left"><span class="dot" style="background:rgba(37,99,235,.85)"></span><span class="legend-name">Тело кредитов</span></div><span class="legend-value">${fmtMoney(derived.totals.principal)}</span></div>
+        <div class="legend-row"><div class="legend-left"><span class="dot" style="background:rgba(217,119,6,.85)"></span><span class="legend-name">Начисленные проценты</span></div><span class="legend-value">${fmtMoney(derived.totals.interest)}</span></div>
+        <div class="legend-row"><div class="legend-left"><span class="dot" style="background:rgba(5,150,105,.85)"></span><span class="legend-name">Долги родственникам</span></div><span class="legend-value">${fmtMoney(derived.totals.family)}</span></div>
+      `;
+    }
+
+    function renderAll() {
+      derived = computeDerived();
+      renderHistoryFilterOptions();
+      renderTxOptions();
+      renderSummary();
+      renderObligationList("credit");
+      renderObligationList("family");
+      renderTransactions();
+      renderHistory();
+      renderRecommendations();
+      renderSupport();
+      renderRefi();
+      renderUpcoming();
+      renderCharts();
+      setUpdatedPill();
+
+      if (!docRef) {
+        setSyncState("Локальный режим", "amber");
+        if (!localOnlyNoticeShown) {
+          setNotice("Firebase ещё не подключён, данные сохраняются локально в этом браузере.", "warn");
+          localOnlyNoticeShown = true;
+        }
+      }
+
+      const r = state.ui.refi || {};
+      if (els.refiObligation && (!r.obligationId || !els.refiObligation.querySelector(`option[value="${r.obligationId}"]`))) {
+        const firstCredit = state.obligations.find(o => o.kind === "credit");
+        if (firstCredit) state.ui.refi.obligationId = firstCredit.id;
+      }
+      if (els.refiObligation) els.refiObligation.value = state.ui.refi.obligationId || els.refiObligation.value || "";
+      if (els.refiAmount && !els.refiAmount.value) els.refiAmount.value = state.ui.refi.amount || "";
+      if (els.refiApr && !els.refiApr.value) els.refiApr.value = state.ui.refi.apr || "";
+      if (els.refiTerm && !els.refiTerm.value) els.refiTerm.value = state.ui.refi.termMonths || "";
+      if (els.refiFee && !els.refiFee.value) els.refiFee.value = state.ui.refi.fee || "";
+      if (els.refiMonthlyFee && !els.refiMonthlyFee.value) els.refiMonthlyFee.value = state.ui.refi.monthlyFee || "";
+      if (els.freeAmount) els.freeAmount.value = state.ui.freeAmount || 0;
+      if (els.optimizeMode) els.optimizeMode.value = state.ui.optimizeMode;
+    }
+
+    function initFirebase() {
       try {
         firebase.initializeApp(firebaseConfig);
         db = firebase.firestore();
         docRef = db.collection(FIRESTORE_PATH.collection).doc(FIRESTORE_PATH.doc);
         setSyncState("Подключение Firebase…", "amber");
 
-        const snapshot = await docRef.get();
-        if (snapshot.exists) {
-          state = normalizeState(snapshot.data());
-          saveLocal();
-          setNotice("Загружена общая версия данных из Firebase.", "good");
+        docRef.get().then(snapshot => {
+          if (snapshot.exists) {
+            state = normalizeState(snapshot.data());
+            saveLocal();
+            setNotice("Загружена общая версия данных из Firebase.", "good");
+          } else {
+            return docRef.set({ ...state, serverUpdatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true }).then(() => {
+              setNotice("Firestore готов. Создан пустой общий документ.", "warn");
+            });
+          }
+        }).then(() => {
           renderAll();
           setSyncState("Синхронизировано", "green");
-        } else {
-          await docRef.set({
-            ...state,
-            serverUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
-          }, { merge: true });
-          setNotice("Firestore готов. Создан пустой общий документ.", "warn");
-          renderAll();
-          setSyncState("Синхронизировано", "green");
-        }
+        }).catch(error => {
+          console.error(error);
+          setSyncState("Локальный режим", "amber");
+          setNotice("Firebase не подключился. Сайт продолжит работать локально в этом браузере.", "warn");
+        });
 
         docRef.onSnapshot(snapshot => {
           try {
@@ -2582,13 +1913,11 @@
               setSyncState("Firebase подключен", "green");
               return;
             }
-
             const incoming = normalizeState(snapshot.data());
             if (JSON.stringify(incoming) === JSON.stringify(state)) {
               setSyncState("Синхронизировано", "green");
               return;
             }
-
             state = incoming;
             saveLocal();
             renderAll();
@@ -2620,56 +1949,61 @@
       window.openEditTx = openEditTx;
     }
 
-    function renderHistoryFilterOptions() {
-      const all = `<option value="all">Все кредиты</option>`;
-      const items = state.obligations.map(ob => `<option value="${ob.id}">${esc(ob.name)}</option>`).join("");
-      els.historyFilter.innerHTML = all + items;
-    }
+    function bindControls() {
+      document.addEventListener("click", e => {
+        const btn = e.target.closest("[data-save-obligation]");
+        if (btn) saveObligation(btn.dataset.saveObligation);
+        const metric = e.target.closest("[data-summary]");
+        if (metric) toggleSummaryDetail(metric.dataset.summary);
+      });
 
-    function renderAll() {
-      derived = computeDerived();
-      renderHistoryFilterOptions();
-      renderTxOptions();
-      renderSummary();
-      renderObligationList("credit");
-      renderObligationList("family");
-      renderTransactions();
-      renderHistory();
-      renderRecommendations();
-      renderSupport();
-      renderRefi();
-      renderUpcoming();
-      renderCharts();
-      setUpdatedPill();
+      els.newCreditStart.value = todayISO();
+      els.newFamilyStart.value = todayISO();
+      els.newTxDate.value = todayISO();
+      els.freeAmount.value = state.ui.freeAmount;
+      els.optimizeMode.value = state.ui.optimizeMode;
 
-      if (!docRef) {
-        setSyncState("Локальный режим", "amber");
-        if (!localOnlyNoticeShown) {
-          setNotice("Firebase ещё не подключён, данные сохраняются локально в этом браузере.", "warn");
-          localOnlyNoticeShown = true;
+      on("addCreditBtn", "click", () => addObligation("credit"));
+      on("addFamilyBtn", "click", () => addObligation("family"));
+      on("addTxBtn", "click", () => addTransaction());
+      on("applyFreeBtn", "click", () => applyRecommendedExtra());
+      on("exportBtn", "click", exportJSON);
+      on("importBtn", "click", importJSON);
+      on("resetBtn", "click", resetAll);
+      on("freeAmount", "input", () => { state.ui.freeAmount = num(els.freeAmount.value); persist(); renderAll(); });
+      on("optimizeMode", "change", () => { state.ui.optimizeMode = els.optimizeMode.value === "payment" ? "payment" : "interest"; persist(); renderAll(); });
+      on("historyFilter", "change", renderHistory);
+      on("calcRefiBtn", "click", () => {
+        const selected = els.refiObligation.value || (state.obligations.find(o => o.kind === "credit")?.id || "");
+        state.ui.refi.obligationId = selected;
+        state.ui.refi.amount = num(els.refiAmount.value);
+        state.ui.refi.apr = num(els.refiApr.value);
+        state.ui.refi.termMonths = Math.max(1, Math.floor(num(els.refiTerm.value || 0))) || 36;
+        state.ui.refi.fee = num(els.refiFee.value);
+        state.ui.refi.monthlyFee = num(els.refiMonthlyFee.value);
+        persist();
+        renderAll();
+      });
+      on("refiObligation", "change", () => {
+        state.ui.refi.obligationId = els.refiObligation.value;
+        const ob = state.obligations.find(o => o.id === state.ui.refi.obligationId);
+        if (ob) {
+          const ledger = derived?.ledgers?.get(ob.id);
+          const balance = ledger?.balance ?? ob.initialPrincipal;
+          els.refiAmount.value = balance.toFixed(2);
+          els.refiApr.value = ob.apr;
+          els.refiTerm.value = ob.termMonths || ledger?.monthsLeft || 36;
+          state.ui.refi.amount = balance;
+          state.ui.refi.apr = ob.apr;
+          state.ui.refi.termMonths = ob.termMonths || ledger?.monthsLeft || 36;
+          persist();
+          renderAll();
         }
-      }
+      });
 
-      if (els.refiObligation && (!state.ui.refi.obligationId || !els.refiObligation.querySelector(`option[value="${state.ui.refi.obligationId}"]`))) {
-        const firstCredit = state.obligations.find(o => o.kind === "credit");
-        if (firstCredit) state.ui.refi.obligationId = firstCredit.id;
-      }
-
-      if (els.refiObligation) els.refiObligation.value = state.ui.refi.obligationId || els.refiObligation.value || "";
-      if (els.refiAmount && !els.refiAmount.value) els.refiAmount.value = state.ui.refi.amount || "";
-      if (els.refiApr && !els.refiApr.value) els.refiApr.value = state.ui.refi.apr || "";
-      if (els.refiTerm && !els.refiTerm.value) els.refiTerm.value = state.ui.refi.termMonths || "";
-      if (els.refiFee && !els.refiFee.value) els.refiFee.value = state.ui.refi.fee || "";
-      if (els.refiMonthlyFee && !els.refiMonthlyFee.value) els.refiMonthlyFee.value = state.ui.refi.monthlyFee || "";
-      if (els.freeAmount) els.freeAmount.value = state.ui.freeAmount || 0;
-      if (els.optimizeMode) els.optimizeMode.value = state.ui.optimizeMode;
-    }
-
-    function openEditModalReset() {
-      els.editModalBackdrop.classList.remove("open");
-      els.editModalBackdrop.setAttribute("aria-hidden", "true");
-      currentEditTxId = null;
-      currentEditTxObligationId = null;
+      on("cancelEditTx", "click", closeEditTx);
+      on("saveEditTx", "click", saveEditTx);
+      els.editModalBackdrop.addEventListener("click", e => { if (e.target === els.editModalBackdrop) closeEditTx(); });
     }
 
     function boot() {
